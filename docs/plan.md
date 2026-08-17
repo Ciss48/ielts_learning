@@ -45,9 +45,13 @@ Browser (Next.js on Vercel)
   disabled.
 - **Cloudflare R2** for media (S3-compatible SDK, zero egress, 10 GB free). AWS S3
   rejected: egress cost, no benefit at this scale. Not needed until Phase 2.
-- **Anthropic API** (`claude-sonnet-4-6`) for writing feedback and content ingestion.
-  Band estimates from AI are **directional (±0.5)** and must be labeled as estimates
-  in the UI.
+- **Grok API** (via OpenRouter or xAI direct, same pattern as the user's Diary
+  project) for writing feedback and content ingestion — swapped from Anthropic API
+  on 2026-08-16 for cost (Anthropic API is paid per-token; the user already has a
+  working Grok integration from Diary). Both use cases only need structured
+  text/JSON output, no Claude-specific capability, so the swap is a drop-in client
+  change with no architecture impact. Band estimates from AI are **directional
+  (±0.5)** and must be labeled as estimates in the UI.
 - **Secrets discipline** per the user's coding-standards skill: all secrets live in
   `.env.local`; `src/lib/config.ts` is the ONLY file that reads `process.env`.
 
@@ -74,9 +78,12 @@ Browser (Next.js on Vercel)
 | 3 Mock block | wk 20–23 | One full timed mock/week + error-log review units |
 | 4 Taper | wk 24 | Light review only |
 
-*Diagnostic runs in week 3 (not week 1) because the test player ships in Phase 2;
-weeks 1–2 are foundation units that need no player. At 5.5 the expected weak points
-are Writing and vocabulary range; Block 2 weighting is adjusted after the diagnostic.
+*Diagnostic runs once Phases 2–3 have shipped: the test player (Phase 2) plus the
+first real ingested tests (Phase 3) — target week 3–4. It is assembled from the
+user's own real tests via the ingestion pipeline rather than architect-authored,
+for authentic difficulty. Weeks 1–2 are foundation units that need no player. At
+5.5 the expected weak points are Writing and vocabulary range; Block 2 weighting
+is adjusted after the diagnostic.
 
 ## 4. Phase list
 
@@ -89,22 +96,40 @@ The pointer mechanic (`getCurrentUnit` / `completeUnit` / `getRoadmap`), Today s
 minimal session player (Strategy → Complete), idempotent seed script, week 1 content
 seeded. Deliverable: the daily habit loop is usable end-to-end.
 
-### Phase 2: Test player + timer + objective grading — [SKETCH ONLY]
-Render reading passages / listening audio (R2), exam-mode countdown timer, answer
-sheet for mcq/tfng/matching/gap-fill, auto-grade against `answer_key`, show
-per-question explanations. Diagnostic mock content batch delivered here.
+### Phase 2: Test player + timer + objective grading — [HAS DETAILED TASK FILE]
+Practice step inside the session player: reading split view, exam countdown timer,
+renderers for all objective question types, server-side grading against
+`answer_key` (keys and explanations never shipped to the client pre-submit),
+attempt persistence, review screen with explanations. Seed script extended to
+tests/questions with id-stable upserts, plus the vocab natural-key fix
+(migration `0002`, from the Phase 01 discovery). Week-2 architect batch includes
+a 13-question mini reading test as the grading verification fixture. Listening
+audio path implemented but content-verified in Phase 3.
 
-### Phase 3: Vocabulary system — [SKETCH ONLY]
+### Phase 3: Batch content ingestion pipeline — [SKETCH ONLY, moved up from old
+Phase 5 per user request 2026-08-17 — needs a real content bank before the heavy
+skill-cycle weeks (wk 6+), not after]
+CLI pipeline, not an in-app tool: point it at `content/raw/` (a folder the user
+drops PDFs into — scanned or text, source is always the user, never fetched by
+Claude). For each file: render pages to images → Grok vision extracts passage/
+audio-script text, questions, options, and answer key into the Phase 0 schema →
+write to `content/staged/<file>.json` (NOT the database). A second script reviews
+and bulk-upserts staged files via the Phase 1 seed script's upsert logic, keyed by
+`seq` assigned by the user in a simple manifest. Listening tests: audio file must
+share the PDF's basename (e.g. `test01.pdf` + `test01.mp3`) and gets uploaded to R2
+during the same run. **Staging is mandatory, not optional** — auto-inserting
+AI-extracted answer keys straight into the DB risks teaching the user a wrong
+answer with no visible sign it happened.
+
+### Phase 4: Vocabulary system — [SKETCH ONLY] *(was Phase 3)*
 Post-test vocab triage (tick unknown words only), SM-2-lite SRS queue feeding the
 session warm-up step, GitHub-style study heatmap from `study_log`.
 
-### Phase 4: AI integration — [SKETCH ONLY]
-Writing grader (Claude API, band-descriptor rubric prompt, structured feedback),
-on-demand "explain why my answer is wrong" for R/L questions.
-
-### Phase 5: Content ingestion tool — [SKETCH ONLY]
-`/admin/ingest`: paste raw test text + answer key → Claude API returns lesson JSON in
-the seed schema → preview → insert. Replaces manual seed batches.
+### Phase 5: AI writing grading + explanations — [SKETCH ONLY] *(was Phase 4;
+ingestion split out to Phase 3)*
+Writing grader (Grok API, band-descriptor rubric prompt, structured feedback),
+on-demand "explain why my answer is wrong" for R/L questions. Reuses the Grok
+client wiring introduced in Phase 3.
 
 ### Phase 6: Dashboard + polish — [SKETCH ONLY]
 Band trajectory per skill from `attempts`, streaks, error-type breakdown, taper-week
@@ -112,9 +137,14 @@ readiness view.
 
 ## 5. Risks / assumptions to validate early
 
-1. **Content cadence is the schedule risk, not code.** Mitigation: 2-week seed
-   batches + Phase 5 ingestion tool; Phase 1 ships with real week-1 content so
-   studying starts immediately.
+1. **Content cadence is the schedule risk, not code.** Mitigation: Phase 3 (moved
+   up) delivers a batch ingestion pipeline right after the test player ships, so a
+   real content bank exists before the heavy skill-cycle weeks; Phase 1 also ships
+   with real week-1 content so studying starts immediately regardless.
+2. **Batch ingestion accuracy.** AI extraction from scanned PDFs can misread a
+   passage, question, or — critically — an answer key. Mitigation: Phase 3 always
+   writes to a staged review file, never directly to the database; the user
+   confirms before the real insert.
 2. **Pointer semantics** assume units are only appended (never inserted below the max
    completed seq). Validated by Phase 1 DoD.
 3. **AI writing band estimates** may drift from official grading — always shown as
@@ -129,3 +159,7 @@ readiness view.
 | Date | Change | Reason | Source |
 |------|--------|--------|--------|
 | 2026-08-16 | Initial plan | — | — |
+| 2026-08-16 | Anthropic API → Grok API for writing feedback (Phase 4) and content ingestion (Phase 5) | Cost — Anthropic API is paid; user has a working Grok setup from the Diary project | User request, pre-Phase 01 |
+| 2026-08-17 | Content ingestion moved from Phase 5 to Phase 3 (right after the test player); redesigned from an in-app paste tool to a CLI batch pipeline reading a folder of PDFs (Grok vision), with mandatory staged-review before DB insert | User wants a content bank in place before the heavy skill-cycle weeks (wk 6+), not sourced/pasted one test at a time; scanned PDFs need vision extraction, not text paste. Old Phase 3 (Vocabulary) and Phase 4 (AI writing/explanations) renumbered to 4 and 5 | User request, pre-Phase 02 |
+| 2026-08-17 | Phase 02 task file written. `vocab_words` seeding switches from delete+reinsert to natural-key upsert on `(unit_id, word)` via migration `0002` | Phase 01 discovery: the delete cascades away `vocab_cards` (SRS progress) on every re-seed; fixing it while `vocab_cards` is still empty is free | memory/discoveries.md [Phase 01] |
+| 2026-08-17 | Diagnostic mock (Block 0) is assembled from the user's real ingested tests, not architect-authored; week-2 batch carries a 13-question architect-written mini test purely as the grading verification fixture | Real Cambridge-style tests have authentic difficulty; synthetic full mocks would mis-calibrate the diagnostic | Phase 01 review |

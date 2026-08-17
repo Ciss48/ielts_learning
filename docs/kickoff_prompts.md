@@ -46,7 +46,31 @@ script. Seed content/seed/week_01.json — that file is architect-owned data: se
 as-is, never edit or "improve" its content. If it seems malformed, log a discovery
 instead of fixing content yourself.
 
-Respect the Non-goals section strictly (no test player, no vocab UI, no AI). When
-every Definition of Done item passes, fulfill the Handoff Obligations (phase report
-+ overwrite STATE.md) and stop.
+---
+
+## Phase 02 kickoff (paste into a NEW Claude Code session after Phase 01 review)
+
+```
+You are the execution model for the IELTS Daily project. Before writing any code:
+
+1. Read CLAUDE.md in the project root — mandatory rules and discovery protocol.
+2. Read memory/STATE.md, memory/phase_01_report.md (especially its "Input for
+   next phase" section), and the [Phase 01] entries in memory/discoveries.md.
+3. Read tasks/phase_02_test_player.md — this is your task. The migration SQL,
+   the tests.ts / band.ts signatures, and the grading normalization rules in it
+   are locked: implement them verbatim.
+
+Build the Practice step of the session player: migration 0002 (vocab natural-key
+upsert fix), seed script support for tests/questions with id-stable upserts, the
+timed test player with the design export's split view and countdown pill,
+server-side grading (answer keys and explanations must never reach the client
+before submission), attempt persistence, and the review screen. Then seed
+content/seed/week_02.json — architect-owned data: seed as-is, never edit or
+"improve" it; log a discovery if it seems malformed.
+
+Reuse Phase 01's patterns: the .env.local self-loading preamble for scripts, the
+existing completeUnitAction (called exactly once, at the final step), and the
+design tokens already in globals.css. Respect the Non-goals strictly (no essay
+rendering, no vocab UI, no AI, no ingestion, no mid-test resume). When every
+Definition of Done item passes, fulfill the Handoff Obligations and stop.
 ```

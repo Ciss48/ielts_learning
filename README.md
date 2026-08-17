@@ -29,12 +29,17 @@ Fill `.env.local` with the values from your Supabase project
 `.env.local` is git-ignored and is the **only** place secrets live.
 `src/lib/config.ts` is the only file that reads `process.env`.
 
-## 2. Apply the database schema
+## 2. Database schema
 
 The schema lives in `supabase/migrations/0001_init.sql`. Migrations are
 **append-only** — never edit an applied migration; add a new numbered file.
 
-Apply it either way:
+> `0001_init.sql` has **already been applied** to the project
+> (`gmmdnbsxrlojzhseaffj`) during Phase 0, via the Supabase Management API query
+> endpoint. All 9 tables exist with RLS enabled and one `authenticated_all`
+> policy each.
+
+To apply it to a *different* / fresh project:
 
 **Supabase SQL editor** — Dashboard → SQL Editor → New query → paste the contents
 of `supabase/migrations/0001_init.sql` → Run.
@@ -52,12 +57,21 @@ Verify:
 select count(*) from units;   -- expect 0
 ```
 
+> **CLI caveat:** because `0001_init.sql` was applied directly rather than through
+> the CLI, the project's migration-history table has no row for it. Before the
+> first `supabase db push` against this project, run:
+> `supabase migration repair --status applied 0001`
+> otherwise the CLI will try to re-apply it and fail on "relation already exists".
+
 ## 3. Create the single user
 
 This app has **no signup flow** by design — it serves exactly one user.
+Both steps below are **manual dashboard steps and still outstanding.**
 
-1. Dashboard → Authentication → Sign In / Providers → **disable "Allow new users
-   to sign up"**.
+1. Dashboard → Authentication → Sign In / Providers → Email → **disable "Allow new
+   users to sign up"**. Without this, anyone who finds the project URL and anon key
+   can create an account, and the `authenticated_all` RLS policy would grant them
+   full read/write on every table.
 2. Dashboard → Authentication → Users → **Add user** → *Create new user*.
    Enter your email + password and tick **Auto Confirm User**.
 

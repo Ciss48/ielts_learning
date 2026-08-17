@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --accent-base:#125e5c;
+  --accent:var(--accent-base);
+  --accent-ink:#fff;
+  --bg:oklch(0.985 0.004 95);
+  --surface:oklch(1 0 0);
+  --surface-2:oklch(0.965 0.005 95);
+  --text:oklch(0.24 0.012 220);
+  --dim:oklch(0.55 0.012 220);
+  --faint:oklch(0.72 0.01 220);
+  --line:oklch(0.91 0.006 220);
+  --shadow:0 1px 2px rgba(20,30,35,.05), 0 8px 24px -12px rgba(20,30,35,.12);
+  --sk-reading:oklch(0.52 0.11 250);
+  --sk-listening:oklch(0.52 0.12 305);
+  --sk-writing:oklch(0.58 0.11 75);
+  --sk-speaking:oklch(0.58 0.13 25);
+  --sk-vocab:oklch(0.5 0.08 195);
+  --sk-mixed:oklch(0.55 0.01 220);
+  --heat-0:oklch(0.93 0.006 200);
+}
+:root[data-theme="dark"]{
+  --accent:color-mix(in oklab, var(--accent-base) 62%, white);
+  --accent-ink:oklch(0.16 0.02 200);
+  --bg:oklch(0.175 0.012 220);
+  --surface:oklch(0.215 0.014 220);
+  --surface-2:oklch(0.245 0.014 220);
+  --text:oklch(0.93 0.008 200);
+  --dim:oklch(0.70 0.012 220);
+  --faint:oklch(0.55 0.012 220);
+  --line:oklch(0.30 0.014 220);
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+  --sk-reading:oklch(0.72 0.11 250);
+  --sk-listening:oklch(0.74 0.11 305);
+  --sk-writing:oklch(0.79 0.11 78);
+  --sk-speaking:oklch(0.74 0.12 25);
+  --sk-vocab:oklch(0.75 0.08 195);
+  --sk-mixed:oklch(0.72 0.01 220);
+  --heat-0:oklch(0.27 0.01 220);
+}
+html,body{margin:0;padding:0;background:var(--bg);}
+*{box-sizing:border-box;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{text-decoration:underline;}
+input,button{font:inherit;}
+input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+::selection{background:color-mix(in oklab, var(--accent) 25%, transparent);}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;">
+
+  <header style="position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 24px;background:color-mix(in oklab, var(--bg) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);">
+    <div style="display:flex;align-items:baseline;gap:10px;min-width:0;">
+      <span style="font-family:Newsreader,serif;font-size:19px;font-weight:600;letter-spacing:-0.01em;">IELTS Daily</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--faint);letter-spacing:.06em;text-transform:uppercase;">Mon 16 Aug</span>
+    </div>
+    <nav style="display:flex;gap:2px;padding:3px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;">
+      <button onClick="{{ goToday }}" style="border:0;cursor:pointer;padding:6px 16px;border-radius:999px;font-size:13px;font-weight:500;background:{{ tabTodayBg }};color:{{ tabTodayFg }};box-shadow:{{ tabTodayShadow }};">Today</button>
+      <button onClick="{{ goSession }}" style="border:0;cursor:pointer;padding:6px 16px;border-radius:999px;font-size:13px;font-weight:500;background:{{ tabSessionBg }};color:{{ tabSessionFg }};box-shadow:{{ tabSessionShadow }};">Session</button>
+      <button onClick="{{ goRoadmap }}" style="border:0;cursor:pointer;padding:6px 16px;border-radius:999px;font-size:13px;font-weight:500;background:{{ tabRoadmapBg }};color:{{ tabRoadmapFg }};box-shadow:{{ tabRoadmapShadow }};">Roadmap</button>
+    </nav>
+    <button onClick="{{ toggleTheme }}" title="Toggle theme" style="flex:none;width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--dim);cursor:pointer;font-size:13px;" style-hover="color:var(--text);border-color:var(--faint);">{{ themeIcon }}</button>
+  </header>
+
+  <!-- ══ TODAY ══ -->
+  <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+  <main style="max-width:660px;margin:0 auto;padding:56px 24px 80px;">
+    <p style="margin:0 0 22px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);">Today's unit</p>
+
+    <article style="background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:32px;">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 11px 4px 9px;border-radius:999px;font-size:12px;font-weight:500;color:var(--sk-reading);background:color-mix(in oklab, var(--sk-reading) 13%, transparent);">
+          <span style="width:6px;height:6px;border-radius:999px;background:currentColor;"></span>Reading</span>
+        <span style="font-size:13px;color:var(--dim);">Foundation · Week 1</span>
+      </div>
+
+      <h1 style="margin:0 0 14px;font-family:Newsreader,serif;font-weight:500;font-size:34px;line-height:1.18;letter-spacing:-0.015em;text-wrap:pretty;">Skimming for main ideas: matching paragraph headings</h1>
+
+      <div style="display:flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--dim);">
+        <span>Unit 07</span><span style="color:var(--faint);">·</span><span>35 min</span><span style="color:var(--faint);">·</span><span>5 steps</span>
+      </div>
+
+      <div style="height:1px;background:var(--line);margin:26px 0 22px;"></div>
+
+      <sc-if value="{{ showElsa }}" hint-placeholder-val="{{ true }}">
+      <button onClick="{{ toggleElsa }}" style="width:100%;display:flex;align-items:center;gap:12px;text-align:left;padding:12px 14px;margin-bottom:24px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);cursor:pointer;color:inherit;" style-hover="border-color:var(--faint);">
+        <span style="flex:none;width:19px;height:19px;border-radius:6px;display:grid;place-items:center;font-size:12px;line-height:1;border:1.5px solid {{ elsaBorder }};background:{{ elsaBg }};color:var(--accent-ink);">{{ elsaMark }}</span>
+        <span style="flex:1;min-width:0;font-size:14px;color:{{ elsaText }};text-decoration:{{ elsaLine }};">ELSA Speak · consonant clusters /str/ /spl/</span>
+        <span style="flex:none;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--faint);">10 min</span>
+      </button>
+      </sc-if>
+
+      <button onClick="{{ startSession }}" style="width:100%;padding:15px 20px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-size:15px;font-weight:600;letter-spacing:-0.005em;cursor:pointer;" style-hover="filter:brightness(1.08);">Start session</button>
+    </article>
+
+    <section style="margin-top:44px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px;">
+      <div>
+        <p style="margin:0 0 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);">Last 12 weeks</p>
+        <div style="display:flex;gap:3px;">
+          <sc-for list="{{ heatWeeks }}" as="week" hint-placeholder-count="12">
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <sc-for list="{{ week.days }}" as="day" hint-placeholder-count="7">
+                <div title="{{ day.label }}" style="width:11px;height:11px;border-radius:3px;background:{{ day.bg }};"></div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:500;color:var(--accent);line-height:1;">12</div>
+        <div style="margin-top:6px;font-size:12.5px;color:var(--dim);">day streak</div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <!-- ══ SESSION ══ -->
+  <sc-if value="{{ isSession }}" hint-placeholder-val="{{ false }}">
+  <main style="padding-bottom:96px;">
+    <div style="border-bottom:1px solid var(--line);background:var(--surface);">
+      <div style="max-width:1080px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <sc-for list="{{ steps }}" as="step" hint-placeholder-count="5">
+          <button onClick="{{ step.go }}" style="display:flex;align-items:center;gap:7px;padding:5px 12px 5px 8px;border-radius:999px;border:1px solid {{ step.border }};background:{{ step.bg }};color:{{ step.fg }};font-size:12.5px;font-weight:500;cursor:{{ step.cursor }};opacity:{{ step.opacity }};">
+            <span style="width:18px;height:18px;border-radius:999px;display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:10px;background:{{ step.dotBg }};color:{{ step.dotFg }};">{{ step.mark }}</span>{{ step.name }}
+          </button>
+          <span style="width:14px;height:1px;background:var(--line);"></span>
+        </sc-for>
+        <span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--faint);">Unit 07 · Reading</span>
+      </div>
+    </div>
+
+    <!-- lesson (markdown) -->
+    <sc-if value="{{ showLesson }}" hint-placeholder-val="{{ true }}">
+    <article style="max-width:68ch;margin:0 auto;padding:52px 24px 40px;font-family:Newsreader,serif;font-size:18.5px;line-height:1.68;color:var(--text);">
+      <p style="margin:0 0 10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);">{{ stepName }}</p>
+      <h1 style="margin:0 0 26px;font-weight:500;font-size:32px;line-height:1.2;letter-spacing:-0.015em;">{{ lessonTitle }}</h1>
+      <p style="margin:0 0 20px;">Matching-headings questions test one thing: whether you can find the <em>controlling idea</em> of a paragraph without reading every word. Examiners write distractors around details that appear in the paragraph but do not govern it.</p>
+      <h2 style="margin:34px 0 12px;font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:600;letter-spacing:.01em;">The three-pass method</h2>
+      <ol style="margin:0 0 20px;padding-left:22px;">
+        <li style="margin-bottom:8px;">Read the <strong>headings list first</strong> and group them: two or three will be near-synonyms — mark those pairs.</li>
+        <li style="margin-bottom:8px;">Skim each paragraph's <strong>first and last sentence</strong>, then the topic-shift word (<em>however</em>, <em>in contrast</em>, <em>as a result</em>).</li>
+        <li>Assign confident matches first. Leave hard paragraphs for the second pass, when fewer headings remain.</li>
+      </ol>
+      <blockquote style="margin:26px 0;padding:14px 20px;border-left:2px solid var(--accent);background:var(--surface-2);border-radius:0 10px 10px 0;font-size:17px;color:var(--dim);">A heading describes what the paragraph <em>does</em>, not what it mentions. If you can only justify a match with one sentence, it is probably a distractor.</blockquote>
+      <h2 style="margin:34px 0 12px;font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:600;">Timing target</h2>
+      <p style="margin:0 0 20px;">Give this task type <strong>90 seconds per paragraph</strong> maximum. In the practice step you will run a 6-paragraph passage against a 9-minute clock.</p>
+      <ul style="margin:0;padding-left:22px;color:var(--dim);">
+        <li style="margin-bottom:6px;">Never re-read a paragraph you have already matched.</li>
+        <li>Write the heading number in the margin, not in the box, until the pass is done.</li>
+      </ul>
+    </article>
+    </sc-if>
+
+    <!-- practice split -->
+    <sc-if value="{{ showPractice }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1180px;margin:0 auto;padding:32px 24px 40px;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr);gap:32px;align-items:start;">
+      <section style="background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:30px 34px;box-shadow:var(--shadow);">
+        <p style="margin:0 0 8px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);">Passage 1 · 6 paragraphs</p>
+        <h2 style="margin:0 0 22px;font-family:Newsreader,serif;font-weight:500;font-size:26px;letter-spacing:-0.01em;">The quiet return of the urban tram</h2>
+        <div style="font-family:Newsreader,serif;font-size:17.5px;line-height:1.7;max-width:68ch;">
+          <p style="margin:0 0 16px;"><strong style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--faint);margin-right:8px;">A</strong>For most of the twentieth century the tram was treated as an obstacle. Cities from Manchester to Melbourne tore up rails to make room for private cars, and by 1970 the vehicle survived mainly in tourist photographs.</p>
+          <p style="margin:0 0 16px;"><strong style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--faint);margin-right:8px;">B</strong>The reversal began not with nostalgia but with arithmetic. Planners comparing the cost per passenger-kilometre of buses, metros and light rail found that trams occupied an unexpectedly efficient middle ground, particularly on corridors carrying between three and eight thousand riders an hour.</p>
+          <p style="margin:0 0 16px;"><strong style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--faint);margin-right:8px;">C</strong>However, the arithmetic alone did not persuade councils. What changed the argument was evidence from Freiburg and Strasbourg that a tram line reshapes the street around it — widening pavements, slowing traffic and, in several documented cases, raising retail turnover along the route.</p>
+          <p style="margin:0 0 16px;color:var(--faint);">[ passage continues — paragraphs D–F ]</p>
+        </div>
+      </section>
+
+      <aside style="position:sticky;top:82px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <p style="margin:0;font-size:13px;font-weight:600;">Questions 1–6</p>
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--faint);">{{ answered }}/6</p>
+        </div>
+        <p style="margin:0 0 18px;font-size:13px;line-height:1.5;color:var(--dim);">Match each paragraph <strong>A–F</strong> with the correct heading, <strong>i–ix</strong>.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <sc-for list="{{ questions }}" as="q" hint-placeholder-count="6">
+            <label style="display:flex;align-items:center;gap:12px;">
+              <span style="flex:none;width:24px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--faint);">{{ q.n }}</span>
+              <span style="flex:none;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--dim);width:16px;">{{ q.para }}</span>
+              <input type="text" value="{{ q.value }}" onChange="{{ q.onChange }}" placeholder="i–ix" style="flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13.5px;" />
+            </label>
+          </sc-for>
+        </div>
+        <div style="height:1px;background:var(--line);margin:18px 0 14px;"></div>
+        <p style="margin:0;font-size:12.5px;line-height:1.5;color:var(--faint);">Answers are checked in the Review step — no feedback until the clock stops.</p>
+      </aside>
+    </div>
+    </sc-if>
+
+    <footer style="position:fixed;left:0;right:0;bottom:0;z-index:20;border-top:1px solid var(--line);background:color-mix(in oklab, var(--surface) 92%, transparent);backdrop-filter:blur(10px);">
+      <div style="max-width:1180px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:16px;">
+        <button onClick="{{ goBack }}" style="padding:9px 14px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--dim);font-size:13.5px;cursor:pointer;" style-hover="color:var(--text);border-color:var(--faint);">Back</button>
+        <sc-if value="{{ showTimer }}" hint-placeholder-val="{{ false }}">
+          <div style="display:inline-flex;align-items:center;gap:9px;padding:8px 14px;border-radius:999px;background:color-mix(in oklab, var(--accent) 12%, transparent);color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;">
+            <span style="width:7px;height:7px;border-radius:999px;background:currentColor;"></span>{{ clock }}
+          </div>
+          <button onClick="{{ toggleTimer }}" style="border:0;background:transparent;color:var(--faint);font-size:12.5px;cursor:pointer;padding:4px;" style-hover="color:var(--text);">{{ timerLabel }}</button>
+        </sc-if>
+        <span style="margin-left:auto;font-size:12.5px;color:var(--faint);">{{ progressLabel }}</span>
+        <button onClick="{{ goNext }}" style="padding:11px 22px;border:0;border-radius:11px;background:var(--accent);color:var(--accent-ink);font-size:14px;font-weight:600;cursor:pointer;" style-hover="filter:brightness(1.08);">{{ nextLabel }}</button>
+      </div>
+    </footer>
+  </main>
+  </sc-if>
+
+  <!-- ══ ROADMAP ══ -->
+  <sc-if value="{{ isRoadmap }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:760px;margin:0 auto;padding:48px 24px 90px;">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:14px;">
+      <div>
+        <h1 style="margin:0 0 6px;font-family:Newsreader,serif;font-weight:500;font-size:26px;letter-spacing:-0.01em;">Roadmap</h1>
+        <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--dim);">Unit 7 of 144 · Week 2 of 24</p>
+      </div>
+      <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--faint);">5% complete</p>
+    </div>
+    <div style="height:5px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden;margin-bottom:40px;">
+      <div style="height:100%;width:5%;background:var(--accent);border-radius:999px;"></div>
+    </div>
+
+    <sc-for list="{{ blocks }}" as="block" hint-placeholder-count="4">
+      <section style="margin-bottom:36px;">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
+          <h2 style="margin:0;font-size:13px;font-weight:600;letter-spacing:.02em;">{{ block.name }}</h2>
+          <span style="flex:1;height:1px;background:var(--line);"></span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--faint);">{{ block.range }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;">
+          <sc-for list="{{ block.units }}" as="u" hint-placeholder-count="4">
+            <button onClick="{{ u.onClick }}" style="display:flex;align-items:center;gap:14px;text-align:left;padding:12px 14px;border:1px solid {{ u.border }};border-radius:12px;background:{{ u.bg }};color:inherit;cursor:{{ u.cursor }};opacity:{{ u.opacity }};margin-bottom:6px;" style-hover="border-color:var(--faint);">
+              <span style="flex:none;width:26px;height:26px;border-radius:999px;display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:11px;background:{{ u.numBg }};color:{{ u.numFg }};border:1px solid {{ u.numBorder }};">{{ u.mark }}</span>
+              <span style="flex:none;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:500;color:{{ u.skillColor }};background:{{ u.skillBg }};">{{ u.skill }}</span>
+              <span style="flex:1;min-width:0;font-size:14.5px;color:{{ u.titleColor }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ u.title }}</span>
+              <span style="flex:none;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--faint);">{{ u.meta }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+    </sc-for>
+  </main>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#125e5c&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#125e5c&quot;,&quot;#1b5a72&quot;,&quot;#2d5a45&quot;,&quot;#6a4a2f&quot;],&quot;section&quot;:&quot;Theme&quot;},&quot;weeks&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:12,&quot;min&quot;:6,&quot;max&quot;:20,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Today&quot;},&quot;showElsa&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Today&quot;}}">
+class Component extends DCLogic {
+  state = { screen: 'today', theme: 'light', step: 1, seconds: 9 * 60, running: false, elsa: false, answers: {} };
+
+  componentDidMount() {
+    document.documentElement.style.setProperty('--accent-base', this.props.accent || '#125e5c');
+    this.tick = setInterval(() => {
+      if (this.state.running && this.state.seconds > 0) this.setState(s => ({ seconds: s.seconds - 1 }));
+    }, 1000);
+  }
+  componentDidUpdate(prev) {
+    if (prev.accent !== this.props.accent) document.documentElement.style.setProperty('--accent-base', this.props.accent || '#125e5c');
+  }
+  componentWillUnmount() { clearInterval(this.tick); }
+
+  setTheme(t) { document.documentElement.dataset.theme = t; this.setState({ theme: t }); }
+
+  heat() {
+    const weeks = Math.max(4, Math.round(this.props.weeks ?? 12));
+    const out = [];
+    let seed = 7;
+    const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    for (let w = 0; w < weeks; w++) {
+      const days = [];
+      for (let d = 0; d < 7; d++) {
+        const r = rnd();
+        const recent = w > weeks - 4;
+        const lvl = w < 2 ? (r > 0.7 ? 1 : 0) : recent ? (r > 0.15 ? (r > 0.6 ? 3 : 2) : 1) : (r > 0.45 ? 2 : r > 0.25 ? 1 : 0);
+        const bg = lvl === 0 ? 'var(--heat-0)' : `color-mix(in oklab, var(--accent) ${lvl * 28 + 14}%, var(--heat-0))`;
+        days.push({ bg, label: lvl ? `${lvl * 15 + 10} min studied` : 'no session' });
+      }
+      out.push({ days });
+    }
+    return out;
+  }
+
+  stepData() {
+    const names = ['Warm-up', 'Strategy', 'Practice', 'Review', 'Vocab'];
+    return names.map((name, i) => {
+      const done = i < this.state.step, cur = i === this.state.step, locked = i > this.state.step;
+      return {
+        name, mark: done ? '✓' : String(i + 1),
+        go: () => { if (!locked) this.setState({ step: i, running: i === 2 && this.state.running }); },
+        bg: cur ? 'color-mix(in oklab, var(--accent) 12%, transparent)' : 'transparent',
+        border: cur ? 'color-mix(in oklab, var(--accent) 35%, transparent)' : 'transparent',
+        fg: cur ? 'var(--accent)' : done ? 'var(--dim)' : 'var(--faint)',
+        dotBg: cur ? 'var(--accent)' : done ? 'color-mix(in oklab, var(--accent) 20%, transparent)' : 'var(--surface-2)',
+        dotFg: cur ? 'var(--accent-ink)' : done ? 'var(--accent)' : 'var(--faint)',
+        cursor: locked ? 'default' : 'pointer',
+        opacity: locked ? '0.45' : '1'
+      };
+    });
+  }
+
+  roadmap() {
+    const skills = {
+      Reading: 'var(--sk-reading)', Listening: 'var(--sk-listening)', Writing: 'var(--sk-writing)',
+      Speaking: 'var(--sk-speaking)', Vocab: 'var(--sk-vocab)', Mixed: 'var(--sk-mixed)'
+    };
+    const data = [
+      { name: 'Foundation', range: 'Units 1–12 · Weeks 1–2', units: [
+        [4, 'Listening', 'Note completion: spelling and numbers', 'done'],
+        [5, 'Writing', 'Task 1 overview sentences', 'done'],
+        [6, 'Vocab', 'Academic Word List — sublist 1', 'done'],
+        [7, 'Reading', 'Skimming for main ideas: matching headings', 'current'],
+        [8, 'Speaking', 'Part 1 fluency: extending short answers', 'locked'],
+      ]},
+      { name: 'Diagnostic', range: 'Units 13–16 · Week 3', units: [
+        [13, 'Mixed', 'Full diagnostic — Listening + Reading', 'locked'],
+        [14, 'Writing', 'Diagnostic Task 2 under timing', 'locked'],
+      ]},
+      { name: 'Skill cycles', range: 'Units 17–112 · Weeks 4–19', units: [
+        [17, 'Reading', 'Cycle 1 — True / False / Not Given', 'locked'],
+        [18, 'Listening', 'Cycle 1 — Map and plan labelling', 'locked'],
+      ]},
+      { name: 'Mock block', range: 'Units 113–136 · Weeks 20–23', units: [
+        [113, 'Mixed', 'Mock test 1 — full paper', 'locked'],
+      ]},
+      { name: 'Taper', range: 'Units 137–144 · Week 24', units: [
+        [137, 'Speaking', 'Rehearsal set — Part 2 cue cards', 'locked'],
+      ]}
+    ];
+    return data.map(b => ({
+      name: b.name, range: b.range,
+      units: b.units.map(([n, skill, title, st]) => ({
+        skill, title,
+        mark: st === 'done' ? '✓' : String(n).padStart(2, '0'),
+        meta: st === 'current' ? 'today' : st === 'done' ? 'done' : '',
+        skillColor: skills[skill],
+        skillBg: `color-mix(in oklab, ${skills[skill]} 13%, transparent)`,
+        bg: st === 'current' ? 'color-mix(in oklab, var(--accent) 8%, var(--surface))' : 'transparent',
+        border: st === 'current' ? 'color-mix(in oklab, var(--accent) 38%, transparent)' : 'var(--line)',
+        numBg: st === 'current' ? 'var(--accent)' : 'transparent',
+        numFg: st === 'current' ? 'var(--accent-ink)' : st === 'done' ? 'var(--accent)' : 'var(--faint)',
+        numBorder: st === 'current' ? 'transparent' : 'var(--line)',
+        titleColor: st === 'locked' ? 'var(--faint)' : 'var(--text)',
+        opacity: st === 'locked' ? '0.5' : '1',
+        cursor: st === 'locked' ? 'default' : 'pointer',
+        onClick: () => { if (st !== 'locked') this.setState({ screen: 'session' }); }
+      }))
+    }));
+  }
+
+  renderVals() {
+    const s = this.state;
+    const tab = (k) => ({
+      [`tab${k[0].toUpperCase() + k.slice(1)}Bg`]: s.screen === k ? 'var(--surface)' : 'transparent',
+      [`tab${k[0].toUpperCase() + k.slice(1)}Fg`]: s.screen === k ? 'var(--text)' : 'var(--dim)',
+      [`tab${k[0].toUpperCase() + k.slice(1)}Shadow`]: s.screen === k ? 'var(--shadow)' : 'none'
+    });
+    const names = ['Warm-up', 'Strategy', 'Practice', 'Review', 'Vocab'];
+    const mm = String(Math.floor(s.seconds / 60)).padStart(2, '0');
+    const ss = String(s.seconds % 60).padStart(2, '0');
+    const qs = [['1', 'A'], ['2', 'B'], ['3', 'C'], ['4', 'D'], ['5', 'E'], ['6', 'F']].map(([n, para]) => ({
+      n, para, value: s.answers[para] || '',
+      onChange: (e) => { const v = e.target.value; this.setState(st => ({ answers: { ...st.answers, [para]: v } })); }
+    }));
+
+    return {
+      ...tab('today'), ...tab('session'), ...tab('roadmap'),
+      isToday: s.screen === 'today', isSession: s.screen === 'session', isRoadmap: s.screen === 'roadmap',
+      goToday: () => this.setState({ screen: 'today' }),
+      goSession: () => this.setState({ screen: 'session' }),
+      goRoadmap: () => this.setState({ screen: 'roadmap' }),
+      startSession: () => this.setState({ screen: 'session', step: 1 }),
+      themeIcon: s.theme === 'dark' ? '☾' : '☀',
+      toggleTheme: () => this.setTheme(s.theme === 'dark' ? 'light' : 'dark'),
+
+      showElsa: this.props.showElsa ?? true,
+      toggleElsa: () => this.setState({ elsa: !s.elsa }),
+      elsaMark: s.elsa ? '✓' : '',
+      elsaBg: s.elsa ? 'var(--accent)' : 'transparent',
+      elsaBorder: s.elsa ? 'var(--accent)' : 'var(--line)',
+      elsaText: s.elsa ? 'var(--faint)' : 'var(--text)',
+      elsaLine: s.elsa ? 'line-through' : 'none',
+      heatWeeks: this.heat(),
+
+      steps: this.stepData(),
+      stepName: names[s.step],
+      lessonTitle: s.step === 3 ? 'Review: what the distractors did' : s.step === 4 ? 'Vocabulary from the passage' : s.step === 0 ? 'Warm-up: two minutes of recall' : 'Reading the paragraph, not the sentence',
+      showLesson: s.step !== 2,
+      showPractice: s.step === 2,
+      showTimer: s.step === 2,
+      clock: `${mm}:${ss}`,
+      timerLabel: s.running ? 'pause' : 'start',
+      toggleTimer: () => this.setState({ running: !s.running }),
+      questions: qs,
+      answered: Object.values(s.answers).filter(v => v && v.trim()).length,
+      progressLabel: `Step ${s.step + 1} of 5`,
+      nextLabel: s.step === 4 ? 'Mark complete' : 'Continue',
+      goNext: () => s.step === 4 ? this.setState({ screen: 'today', step: 1 }) : this.setState({ step: s.step + 1, running: s.step + 1 === 2 }),
+      goBack: () => s.step === 0 ? this.setState({ screen: 'today' }) : this.setState({ step: s.step - 1 }),
+
+      blocks: this.roadmap()
+    };
+  }
+}
+</script>
+</body>
+</html>

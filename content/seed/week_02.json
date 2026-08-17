@@ -1,0 +1,208 @@
+{
+  "units": [
+    {
+      "seq": 7,
+      "block": "foundation",
+      "skill": "reading",
+      "title": "True/False/Not Given: FALSE vs NOT GIVEN",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: daily pronunciation practice",
+      "strategy_md": "## The question type that punishes world knowledge\n\nTFNG has one rule: judge the statement against **the passage only**, never against what you know is true in real life.\n\n- **TRUE** — the passage says the same thing in different words.\n- **FALSE** — the passage says the **opposite**. You can point at a sentence that contradicts the statement.\n- **NOT GIVEN** — the passage is **silent**. No sentence confirms it, no sentence contradicts it.\n\nThe entire trap is the FALSE/NOT GIVEN boundary. Candidates at 5.5 mark statements FALSE because they *feel* wrong or *sound* unlikely — but if you cannot underline a contradicting sentence, the answer is NOT GIVEN.\n\n## Procedure\n\n1. Underline the statement's anchor (name, number, rare noun).\n2. Scan to the paragraph, read the 1-2 sentences around the anchor carefully.\n3. Ask exactly one question: *does the text confirm, contradict, or stay silent?*\n\n## Drill\n\nFor the sentence *\"Coffee was first grown in Ethiopia\"*, write three short passage sentences: one that makes it TRUE, one that makes it FALSE, one that leaves it NOT GIVEN. If you can build all three, you understand the type. Tomorrow you use it under a timer.",
+      "vocab": []
+    },
+    {
+      "seq": 8,
+      "block": "foundation",
+      "skill": "writing",
+      "title": "Task 1: the overview sentence",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: daily pronunciation practice",
+      "strategy_md": "## The single highest-value sentence in Task 1\n\nThe band descriptors are explicit: without a clear **overview**, Task Achievement is capped around 5. One sentence fixes that.\n\nAn overview states the **main trends only** — no numbers, no data, no detail:\n\n> *Overall, car ownership rose steadily across the period, while bicycle use declined in every country shown.*\n\nRules:\n\n1. Start it with *Overall,* and place it right after your one-sentence paraphrase of the chart title.\n2. Pick the **two biggest stories** in the data (the largest rise, the clearest fall, the dominant category). Ignore everything else.\n3. Zero numbers. Numbers belong in the body paragraphs.\n\n## Drill\n\nWrite overview sentences (one each) for these described charts:\n\n1. A line graph: internet users in Vietnam rise from 10% (2005) to 79% (2023); landline phones fall from 30% to 4%.\n2. A bar chart: in 2020, plastic makes up 40% of ocean waste, metal 15%, glass 10%, other 35%.\n3. A pie pair: household spending 1990 vs 2020 — food share shrinks, housing share doubles.\n\nCheck each: starts with *Overall*, two trends, no numbers. Mark complete.",
+      "vocab": []
+    },
+    {
+      "seq": 9,
+      "block": "foundation",
+      "skill": "reading",
+      "title": "Timed practice: your first graded mini-test",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: daily pronunciation practice",
+      "strategy_md": "## Before you press Begin\n\nThis is your first timed, machine-graded practice: **13 questions, 20 minutes**, one passage. That is a slightly generous pace — a real test gives you 20 minutes for a full 13-14 question passage, so treat this as the real rhythm.\n\nRun the exact procedure from this week:\n\n1. **Skim first (2 min).** First and last sentence of each paragraph; label each paragraph in 3 words.\n2. **TFNG:** judge against the passage only. No contradicting sentence → NOT GIVEN.\n3. **Sentence completion:** respect the word limit — an answer over the limit is wrong even when correct. Answers come in passage order.\n4. **Multiple choice:** eliminate two options fast, then decide between the last two by re-reading the exact lines.\n\nDon't leave blanks — there is no penalty for guessing. When the review screen shows your mistakes, read every explanation, including for questions you got right by luck.",
+      "vocab": [],
+      "test": {
+        "skill": "reading",
+        "title": "Vertical Farming: Agriculture Looks Up",
+        "duration_minutes": 20,
+        "audio_url": null,
+        "content": {
+          "passage_md": "# Vertical Farming: Agriculture Looks Up\n\n**A.** In a converted warehouse on the edge of Copenhagen, lettuce grows in trays stacked fourteen layers high, bathed in a soft magenta glow. This is vertical farming: the practice of cultivating crops indoors, in layers placed one above another, inside a completely controlled environment. In place of sunlight, the plants are lit by LED lamps tuned to the exact wavelengths that drive photosynthesis; in place of soil, nutrients are delivered to their roots by hydroponic solutions. The concept was popularized in 1999 by Dickson Despommier, a professor at Columbia University, who imagined skyscrapers of food rising inside city centres.\n\n**B.** The appeal is easy to state. Because water in a sealed system is captured and recirculated, a vertical farm can use up to 95 per cent less of it than a conventional field. The sealed environment also keeps insects out, so crops can be grown with little or no pesticide, and harvests continue year-round regardless of drought, frost or storm. Perhaps most attractively, farms can sit inside the cities they feed, which sharply reduces the distance food travels — and with it, transport costs and emissions.\n\n**C.** The economics, however, have proved stubborn. Replacing free sunlight with artificial light is expensive: electricity for lighting and climate control is by far the largest operating expense of a vertical farm. When energy prices climbed sharply, several high-profile companies that had raised hundreds of millions of dollars from investors went bankrupt, and even the survivors have struggled to turn a consistent profit.\n\n**D.** The range of crops that make commercial sense is also narrow. Herbs and leafy greens dominate because they grow quickly, sell at high prices and stay conveniently short. Staple crops are another matter entirely: by one widely cited estimate, the electricity needed to grow enough wheat indoors for a single loaf of bread would cost many times the price of the loaf itself.\n\n**E.** Few researchers now expect vertical farms to replace conventional agriculture. Instead, the industry is settling into a role as a complement to it: hybrid greenhouses that combine natural sunlight with supplemental LEDs, and compact urban farms supplying salad crops to dense cities or to regions with harsh climates. As one analyst puts it, feeding the world's cities 'will not be solved by any single technology' — but vertical farming may still claim a modest, useful share of the task."
+        },
+        "questions": [
+          {
+            "qnum": 1,
+            "qtype": "tfng",
+            "prompt": "In vertical farms, crops are grown in layers positioned one above another.",
+            "options": ["TRUE", "FALSE", "NOT GIVEN"],
+            "answer_key": ["true"],
+            "explanation_md": "Paragraph A states crops are cultivated \"in layers placed one above another\" — the statement paraphrases this directly, so it is TRUE."
+          },
+          {
+            "qnum": 2,
+            "qtype": "tfng",
+            "prompt": "Vertical farming uses more water than conventional field agriculture.",
+            "options": ["TRUE", "FALSE", "NOT GIVEN"],
+            "answer_key": ["false"],
+            "explanation_md": "Paragraph B says a vertical farm can use \"up to 95 per cent less\" water than a conventional field — the passage states the opposite of the claim, so it is FALSE, not NOT GIVEN."
+          },
+          {
+            "qnum": 3,
+            "qtype": "tfng",
+            "prompt": "Dickson Despommier was the first person to grow food indoors.",
+            "options": ["TRUE", "FALSE", "NOT GIVEN"],
+            "answer_key": ["not given"],
+            "explanation_md": "Paragraph A says Despommier popularized the *concept* in 1999, but the passage never says whether anyone grew food indoors before him. No sentence confirms or contradicts \"first person\", so the answer is NOT GIVEN — this is the classic FALSE/NOT GIVEN trap."
+          },
+          {
+            "qnum": 4,
+            "qtype": "tfng",
+            "prompt": "Some vertical farming companies have gone bankrupt.",
+            "options": ["TRUE", "FALSE", "NOT GIVEN"],
+            "answer_key": ["true"],
+            "explanation_md": "Paragraph C: \"several high-profile companies... went bankrupt\". Direct match — TRUE."
+          },
+          {
+            "qnum": 5,
+            "qtype": "tfng",
+            "prompt": "Vegetables from vertical farms taste better than field-grown vegetables.",
+            "options": ["TRUE", "FALSE", "NOT GIVEN"],
+            "answer_key": ["not given"],
+            "explanation_md": "The passage never mentions taste anywhere. You may believe fresher food tastes better — but judging by world knowledge instead of the text is exactly the mistake this type punishes. NOT GIVEN."
+          },
+          {
+            "qnum": 6,
+            "qtype": "gap_fill",
+            "prompt": "Complete the sentence with NO MORE THAN TWO WORDS from the passage: In place of sunlight, the plants are lit by ______.",
+            "options": null,
+            "answer_key": ["led lamps", "leds"],
+            "explanation_md": "Paragraph A: \"the plants are lit by LED lamps tuned to the exact wavelengths...\". \"LED lamps\" fits the two-word limit."
+          },
+          {
+            "qnum": 7,
+            "qtype": "gap_fill",
+            "prompt": "Complete the sentence with NO MORE THAN TWO WORDS from the passage: Nutrients are delivered to the plants' roots by ______ solutions.",
+            "options": null,
+            "answer_key": ["hydroponic"],
+            "explanation_md": "Paragraph A: \"nutrients are delivered to their roots by hydroponic solutions\". One word, inside the limit."
+          },
+          {
+            "qnum": 8,
+            "qtype": "gap_fill",
+            "prompt": "Complete the sentence with NO MORE THAN TWO WORDS from the passage: The largest operating expense of a vertical farm is ______ for lighting and climate control.",
+            "options": null,
+            "answer_key": ["electricity"],
+            "explanation_md": "Paragraph C: \"electricity for lighting and climate control is by far the largest operating expense\". The gap sits immediately before \"for lighting\", so the passage word is \"electricity\"."
+          },
+          {
+            "qnum": 9,
+            "qtype": "gap_fill",
+            "prompt": "Complete the sentence with NO MORE THAN TWO WORDS from the passage: The crops most commonly grown in vertical farms are herbs and ______.",
+            "options": null,
+            "answer_key": ["leafy greens"],
+            "explanation_md": "Paragraph D: \"Herbs and leafy greens dominate because they grow quickly...\". \"Leafy greens\" is exactly two words — at the limit, not over it."
+          },
+          {
+            "qnum": 10,
+            "qtype": "mcq",
+            "prompt": "According to paragraph B, locating farms inside cities mainly helps to:",
+            "options": [
+              "increase the variety of crops grown",
+              "reduce the distance food travels",
+              "lower the price of electricity",
+              "improve the quality of the soil"
+            ],
+            "answer_key": ["reduce the distance food travels"],
+            "explanation_md": "Paragraph B: farms inside cities \"sharply reduces the distance food travels — and with it, transport costs and emissions\". The other options are never linked to city locations."
+          },
+          {
+            "qnum": 11,
+            "qtype": "mcq",
+            "prompt": "Why does the writer mention wheat in paragraph D?",
+            "options": [
+              "to show that grains grow faster indoors",
+              "to illustrate that staple crops are uneconomical to grow vertically",
+              "to suggest that bread prices are likely to fall",
+              "to compare the nutritional value of wheat and lettuce"
+            ],
+            "answer_key": ["to illustrate that staple crops are uneconomical to grow vertically"],
+            "explanation_md": "The wheat-for-a-loaf estimate is an *example* supporting the paragraph's point that \"staple crops are another matter entirely\" — i.e. they don't make commercial sense indoors."
+          },
+          {
+            "qnum": 12,
+            "qtype": "mcq",
+            "prompt": "Which statement best reflects the writer's overall view of vertical farming?",
+            "options": [
+              "It will eventually replace conventional agriculture",
+              "It has already proved to be a failure",
+              "It will play a useful but limited role",
+              "Its future is impossible to assess"
+            ],
+            "answer_key": ["it will play a useful but limited role"],
+            "explanation_md": "Paragraph E: \"a complement\" to conventional farming that \"may still claim a modest, useful share of the task\". The writer rejects full replacement (A) but is not dismissive (B) or agnostic (D)."
+          },
+          {
+            "qnum": 13,
+            "qtype": "mcq",
+            "prompt": "The main purpose of paragraph C is to:",
+            "options": [
+              "describe the industry's financial difficulties",
+              "explain how LED lighting works",
+              "encourage investment in vertical farms",
+              "list the crops grown in vertical farms"
+            ],
+            "answer_key": ["describe the industry's financial difficulties"],
+            "explanation_md": "Paragraph C is entirely about cost and profitability: the electricity expense, bankruptcies, and survivors \"struggling to turn a consistent profit\"."
+          }
+        ]
+      }
+    },
+    {
+      "seq": 10,
+      "block": "foundation",
+      "skill": "listening",
+      "title": "Section 2 maps: orient before the audio starts",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: directions and prepositions of place",
+      "strategy_md": "## Why map questions feel chaotic\n\nIn Section 2 map tasks the speaker walks you through a place once, at natural speed. Candidates get lost because they start *reading the map while listening*. Band 7 listeners finish reading the map **before** the audio begins.\n\n## The 30-second orientation routine\n\nIn the pause before the section:\n\n1. **Find the entrance / starting point** — the speaker almost always begins there.\n2. **Note what is already labeled.** Labeled places are your landmarks; answers cluster around them.\n3. **Check for a compass.** If one exists, expect *north of / on the eastern side*; if not, expect *left / right / opposite / next to / between / at the end of*.\n4. **Predict the path**: speakers move systematically (clockwise, or entrance → far end), not randomly.\n\n## The language that carries the answers\n\n*go past · just beyond · directly opposite · in the corner · halfway along · as you come in, on your right*\n\n## Drill\n\nSketch a simple rectangle building with an entrance, a corridor, and six rooms. Pick any three rooms and write one sentence locating each, using a different preposition phrase from the list above. Reading these aloud is today's ELSA warm-up material.",
+      "vocab": []
+    },
+    {
+      "seq": 11,
+      "block": "foundation",
+      "skill": "writing",
+      "title": "Complex sentences that don't collapse",
+      "est_minutes": 75,
+      "elsa_task": "15 min ELSA: daily pronunciation practice",
+      "strategy_md": "## What band 7 grammar actually means\n\nThe descriptor says: *uses a variety of complex structures* and *produces frequent error-free sentences*. Both halves matter. A 5.5 essay usually fails the second half — long ambitious sentences that collapse under their own weight.\n\nThe fix is a rule: **one subordinate idea per sentence.** Complexity comes from variety across the essay, not from stacking clauses inside one sentence.\n\n## Three patterns that cover 90% of Task 2\n\n1. **Although X, Y.** — *Although remote work saves commuting time, it can weaken team cohesion.*\n2. **X, which Z, Y.** — *Public transport, which most residents rely on daily, deserves greater investment.*\n3. **If X, Y.** — *If universities were free, enrolment among low-income students would rise significantly.*\n\nWrite each pattern correctly on demand and your grammar range box is ticked. Then stop decorating.\n\n## Drill\n\nCombine each pair into ONE sentence, using a different pattern each time — then check: exactly one comma rule per pattern, no run-ons.\n\n1. Cities are growing fast. Housing is becoming unaffordable.\n2. Many people shop online. Local stores are closing.\n3. Governments could tax sugary drinks. Consumption would likely fall.\n4. Air pollution harms health. Hanoi's air quality is often poor.\n5. Students memorize facts. They rarely practice critical thinking.",
+      "vocab": []
+    },
+    {
+      "seq": 12,
+      "block": "foundation",
+      "skill": "mixed",
+      "title": "Week 2 review: the language of trends",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: free conversation — describe a trend you noticed this year",
+      "strategy_md": "## One vocabulary set, three exam uses\n\nTrend language is unusually good value: it is the core of **Writing Task 1**, appears constantly in **Reading** passages about data, and upgrades **Speaking Part 3** answers about changes in society. Today's eight words below are that set.\n\n## Precision beats variety\n\nEach trend word encodes *direction* + *speed*. Misusing one is worse than repeating a plain one:\n\n- *surge* = up, fast and large. Not for a 2% rise.\n- *decline* = down, general purpose. Safe default.\n- *fluctuate* = up AND down repeatedly. Not for any single change.\n- *plateau* = flat AFTER movement. Not simply \"flat\".\n\nPair them honestly with adverbs: *rise steadily*, *fall sharply*, *peak at*, *remain stable*.\n\n## Drill\n\n1. Study the eight words below; write one sentence each about Vietnam (economy, internet use, coffee exports — anything you actually know).\n2. Re-do Unit 8's three overview sentences, upgrading the verbs with today's set.\n3. Paraphrase check from Week 1: rewrite *\"The number of people using cash fell quickly after 2020\"* twice — once with a word-form change, once with a structure flip.\n\nNext week: your app gains a real test player — and the diagnostic mock follows as soon as your own test bank is ingested.",
+      "vocab": [
+        { "word": "fluctuate", "ipa": "/ˈflʌktʃueɪt/", "meaning_en": "to change repeatedly, rising and falling", "meaning_vi": "dao động, biến động lên xuống", "example": "Oil prices fluctuated wildly throughout the decade." },
+        { "word": "surge", "ipa": "/sɜːrdʒ/", "meaning_en": "a sudden large increase", "meaning_vi": "tăng vọt", "example": "Online orders surged during the holiday season." },
+        { "word": "plateau", "ipa": "/plæˈtoʊ/", "meaning_en": "to stop changing after a period of growth", "meaning_vi": "chững lại (sau khi tăng)", "example": "Smartphone sales plateaued after 2018." },
+        { "word": "decline", "ipa": "/dɪˈklaɪn/", "meaning_en": "to decrease gradually", "meaning_vi": "suy giảm", "example": "Birth rates have declined steadily across East Asia." },
+        { "word": "proportion", "ipa": "/prəˈpɔːrʃn/", "meaning_en": "a part or share of a whole", "meaning_vi": "tỷ lệ, tỷ trọng", "example": "The proportion of renewable energy rose to a third of the total." },
+        { "word": "consumption", "ipa": "/kənˈsʌmpʃn/", "meaning_en": "the amount used, eaten, or bought", "meaning_vi": "mức tiêu thụ", "example": "Electricity consumption peaks on hot summer afternoons." },
+        { "word": "steadily", "ipa": "/ˈstedɪli/", "meaning_en": "gradually and at a constant rate", "meaning_vi": "một cách đều đặn, ổn định", "example": "Tourist numbers grew steadily between 2010 and 2019." },
+        { "word": "peak", "ipa": "/piːk/", "meaning_en": "to reach the highest point before falling", "meaning_vi": "đạt đỉnh", "example": "Traffic peaks at around 6 p.m. on weekdays." }
+      ]
+    }
+  ]
+}
