@@ -6,6 +6,10 @@
  * Seed files are architect-owned data. This script validates and loads them
  * verbatim; it never rewrites, normalises or fills in content. A malformed file
  * aborts the run with the offending field path.
+ *
+ * Validation lives in `scripts/lib/validate.ts`, shared with
+ * `scripts/ingest_commit.ts` so hand-authored and AI-extracted content are held
+ * to exactly the same rules.
  */
 
 import { readFileSync } from "node:fs";
@@ -16,131 +20,13 @@ import { resolve } from "node:path";
 // pulls in src/lib/config.ts (which reads process.env at module scope).
 process.loadEnvFile(resolve(process.cwd(), ".env.local"));
 
-const BLOCKS = [
-  "diagnostic",
-  "foundation",
-  "skill_cycle",
-  "mock",
-  "taper",
-] as const;
-
-const SKILLS = [
-  "reading",
-  "listening",
-  "writing",
-  "speaking",
-  "vocab",
-  "mixed",
-] as const;
-
-type Block = (typeof BLOCKS)[number];
-type Skill = (typeof SKILLS)[number];
-
-interface SeedVocab {
-  word: string;
-  ipa: string | null;
-  meaning_en: string | null;
-  meaning_vi: string | null;
-  example: string | null;
-}
-
-interface SeedUnit {
-  seq: number;
-  block: Block;
-  skill: Skill;
-  title: string;
-  est_minutes: number;
-  elsa_task: string | null;
-  strategy_md: string;
-  vocab: SeedVocab[];
-}
+import { parseSeedFile, ValidationError } from "./lib/validate";
 
 class SeedError extends Error {}
 
-function fail(field: string, problem: string): never {
-  throw new SeedError(`Invalid seed file at \`${field}\`: ${problem}`);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function requireString(value: unknown, field: string): string {
-  if (typeof value !== "string" || value.trim() === "") {
-    fail(field, `expected a non-empty string, got ${JSON.stringify(value)}`);
-  }
-  return value;
-}
-
-function optionalString(value: unknown, field: string): string | null {
-  if (value === undefined || value === null || value === "") return null;
-  if (typeof value !== "string") {
-    fail(field, `expected a string or null, got ${JSON.stringify(value)}`);
-  }
-  return value;
-}
-
-function requirePositiveInt(value: unknown, field: string): number {
-  if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
-    fail(field, `expected a positive integer, got ${JSON.stringify(value)}`);
-  }
-  return value;
-}
-
-function requireEnum<T extends string>(
-  value: unknown,
-  field: string,
-  allowed: readonly T[],
-): T {
-  if (typeof value !== "string" || !allowed.includes(value as T)) {
-    fail(field, `expected one of ${allowed.join(" | ")}, got ${JSON.stringify(value)}`);
-  }
-  return value as T;
-}
-
-function parseVocab(raw: unknown, field: string): SeedVocab {
-  if (!isRecord(raw)) fail(field, "expected an object");
-  return {
-    word: requireString(raw.word, `${field}.word`),
-    ipa: optionalString(raw.ipa, `${field}.ipa`),
-    meaning_en: optionalString(raw.meaning_en, `${field}.meaning_en`),
-    meaning_vi: optionalString(raw.meaning_vi, `${field}.meaning_vi`),
-    example: optionalString(raw.example, `${field}.example`),
-  };
-}
-
-function parseSeedFile(json: unknown): SeedUnit[] {
-  if (!isRecord(json)) fail("<root>", "expected a JSON object");
-  if (!Array.isArray(json.units)) fail("units", "expected an array");
-  if (json.units.length === 0) fail("units", "is empty — nothing to seed");
-
-  const seen = new Map<number, number>();
-
-  return json.units.map((raw, i) => {
-    const field = `units[${i}]`;
-    if (!isRecord(raw)) fail(field, "expected an object");
-
-    const seq = requirePositiveInt(raw.seq, `${field}.seq`);
-    const previous = seen.get(seq);
-    if (previous !== undefined) {
-      fail(`${field}.seq`, `duplicate seq ${seq}, already used by units[${previous}]`);
-    }
-    seen.set(seq, i);
-
-    const vocabRaw = raw.vocab ?? [];
-    if (!Array.isArray(vocabRaw)) fail(`${field}.vocab`, "expected an array");
-
-    return {
-      seq,
-      block: requireEnum(raw.block, `${field}.block`, BLOCKS),
-      skill: requireEnum(raw.skill, `${field}.skill`, SKILLS),
-      title: requireString(raw.title, `${field}.title`),
-      est_minutes: requirePositiveInt(raw.est_minutes, `${field}.est_minutes`),
-      elsa_task: optionalString(raw.elsa_task, `${field}.elsa_task`),
-      strategy_md: requireString(raw.strategy_md, `${field}.strategy_md`),
-      vocab: vocabRaw.map((v, j) => parseVocab(v, `${field}.vocab[${j}]`)),
-    };
-  });
+/** Both failure modes print the same way: one clear line, exit 1. */
+function isExpectedError(err: unknown): err is Error {
+  return err instanceof SeedError || err instanceof ValidationError;
 }
 
 async function main(): Promise<void> {
@@ -167,6 +53,36 @@ async function main(): Promise<void> {
 
   const { createAdminClient } = await import("../src/lib/supabase/admin");
   const supabase = createAdminClient();
+
+  // --- Bank test references -------------------------------------------------
+  // A unit may link a bank test by slug instead of embedding one. Resolve every
+  // slug up front so an unknown one aborts before anything is written.
+  const referencedSlugs = [
+    ...new Set(units.map((u) => u.test_ref).filter((s): s is string => s !== null)),
+  ];
+  const testIdBySlug = new Map<string, string>();
+
+  if (referencedSlugs.length > 0) {
+    const { data: bankTests, error: bankError } = await supabase
+      .from("tests")
+      .select("id, slug")
+      .in("slug", referencedSlugs);
+    if (bankError) {
+      throw new SeedError(`Could not resolve test_ref slugs: ${bankError.message}`);
+    }
+    for (const row of bankTests ?? []) {
+      testIdBySlug.set(row.slug as string, row.id as string);
+    }
+
+    const unknown = referencedSlugs.filter((slug) => !testIdBySlug.has(slug));
+    if (unknown.length > 0) {
+      throw new SeedError(
+        `Unknown test_ref slug(s): ${unknown.map((s) => JSON.stringify(s)).join(", ")}. ` +
+          "Commit the staged file first with `npx tsx scripts/ingest_commit.ts …`, " +
+          "or fix the slug in the seed file.",
+      );
+    }
+  }
 
   // --- Roadmap pointer invariant -------------------------------------------
   // Existing units may be updated in place, but a *new* unit must never be
@@ -222,7 +138,9 @@ async function main(): Promise<void> {
       })),
       { onConflict: "seq" },
     )
-    .select("id, seq");
+    // `test_id` is not in the payload, so an existing unit keeps whatever test
+    // it is already linked to; reading it back tells us insert-vs-update below.
+    .select("id, seq, test_id");
 
   if (unitsError) {
     throw new SeedError(`Failed to upsert units: ${unitsError.message}`);
@@ -231,73 +149,210 @@ async function main(): Promise<void> {
   const idBySeq = new Map<number, string>(
     (upserted ?? []).map((u) => [u.seq as number, u.id as string]),
   );
+  const testIdBySeq = new Map<number, string | null>(
+    (upserted ?? []).map((u) => [u.seq as number, (u.test_id as string | null) ?? null]),
+  );
+
+  function unitIdFor(seq: number): string {
+    const unitId = idBySeq.get(seq);
+    if (!unitId) {
+      throw new SeedError(`Upsert did not return an id for unit seq ${seq}`);
+    }
+    return unitId;
+  }
 
   // --- Vocab ----------------------------------------------------------------
-  // `vocab_cards.word_id` cascades on delete, so replacing a unit's words also
-  // drops any SRS scheduling built on them (Phase 3). Warn rather than silently
-  // discard review history.
-  const targetUnitIds = [...idBySeq.values()];
-  const { data: doomedWords } = await supabase
-    .from("vocab_words")
-    .select("id")
-    .in("unit_id", targetUnitIds);
-  const doomedIds = (doomedWords ?? []).map((w) => w.id as string);
-  if (doomedIds.length > 0) {
-    const { count } = await supabase
-      .from("vocab_cards")
-      .select("id", { count: "exact", head: true })
-      .in("word_id", doomedIds);
-    if (count && count > 0) {
-      console.warn(
-        `WARNING: re-seeding removes ${count} vocab_cards row(s) (SRS progress) ` +
-          "because vocab_words are replaced. Re-run only if that is intended.",
-      );
-    }
-  }
-
-  // Delete-then-reinsert per unit, so re-running never duplicates rows.
+  // Natural-key upsert on (unit_id, word) — migration 0002. An unchanged word
+  // keeps its id, so the `vocab_cards` row hanging off it (SRS progress)
+  // survives a re-seed. Only words dropped from the file are deleted, and
+  // `vocab_cards.word_id` cascades, so those are the only ones worth warning on.
   let vocabCount = 0;
   for (const unit of units) {
-    const unitId = idBySeq.get(unit.seq);
-    if (!unitId) {
-      throw new SeedError(`Upsert did not return an id for unit seq ${unit.seq}`);
+    const unitId = unitIdFor(unit.seq);
+
+    if (unit.vocab.length > 0) {
+      const { error: upsertError } = await supabase.from("vocab_words").upsert(
+        unit.vocab.map((v) => ({
+          unit_id: unitId,
+          word: v.word,
+          ipa: v.ipa,
+          meaning_en: v.meaning_en,
+          meaning_vi: v.meaning_vi,
+          example: v.example,
+        })),
+        { onConflict: "unit_id,word" },
+      );
+      if (upsertError) {
+        throw new SeedError(
+          `Failed to upsert vocab for unit seq ${unit.seq}: ${upsertError.message}`,
+        );
+      }
+      vocabCount += unit.vocab.length;
     }
 
-    const { error: deleteError } = await supabase
+    const { data: existingWords, error: readWordsError } = await supabase
       .from("vocab_words")
-      .delete()
+      .select("id, word")
       .eq("unit_id", unitId);
-    if (deleteError) {
+    if (readWordsError) {
       throw new SeedError(
-        `Failed to clear vocab for unit seq ${unit.seq}: ${deleteError.message}`,
+        `Failed to read vocab for unit seq ${unit.seq}: ${readWordsError.message}`,
       );
     }
 
-    if (unit.vocab.length === 0) continue;
+    const keep = new Set(unit.vocab.map((v) => v.word));
+    const staleIds = (existingWords ?? [])
+      .filter((w) => !keep.has(w.word as string))
+      .map((w) => w.id as string);
 
-    const { error: insertError } = await supabase.from("vocab_words").insert(
-      unit.vocab.map((v) => ({
-        unit_id: unitId,
-        word: v.word,
-        ipa: v.ipa,
-        meaning_en: v.meaning_en,
-        meaning_vi: v.meaning_vi,
-        example: v.example,
-      })),
-    );
-    if (insertError) {
-      throw new SeedError(
-        `Failed to insert vocab for unit seq ${unit.seq}: ${insertError.message}`,
-      );
+    if (staleIds.length > 0) {
+      const { count } = await supabase
+        .from("vocab_cards")
+        .select("id", { count: "exact", head: true })
+        .in("word_id", staleIds);
+      if (count && count > 0) {
+        console.warn(
+          `WARNING: unit seq ${unit.seq} — ${staleIds.length} word(s) are no longer ` +
+            `in the seed file; deleting them also removes ${count} vocab_cards ` +
+            "row(s) (SRS progress).",
+        );
+      }
+
+      const { error: deleteError } = await supabase
+        .from("vocab_words")
+        .delete()
+        .in("id", staleIds);
+      if (deleteError) {
+        throw new SeedError(
+          `Failed to prune vocab for unit seq ${unit.seq}: ${deleteError.message}`,
+        );
+      }
     }
-    vocabCount += unit.vocab.length;
   }
 
-  console.log(`Seeded ${units.length} units, ${vocabCount} vocab words`);
+  // --- test_ref links -------------------------------------------------------
+  // Linking only: a bank test is owned by `ingest_commit.ts`, so the seeder
+  // never touches its row or its questions.
+  let linkedCount = 0;
+  for (const unit of units) {
+    if (unit.test_ref === null) continue;
+
+    const bankTestId = testIdBySlug.get(unit.test_ref);
+    if (!bankTestId) {
+      throw new SeedError(`Unknown test_ref slug ${JSON.stringify(unit.test_ref)}`);
+    }
+
+    if (testIdBySeq.get(unit.seq) !== bankTestId) {
+      const { error: linkError } = await supabase
+        .from("units")
+        .update({ test_id: bankTestId })
+        .eq("id", unitIdFor(unit.seq));
+      if (linkError) {
+        throw new SeedError(
+          `Failed to link test_ref ${JSON.stringify(unit.test_ref)} to unit seq ${unit.seq}: ${linkError.message}`,
+        );
+      }
+      testIdBySeq.set(unit.seq, bankTestId);
+    }
+    linkedCount += 1;
+  }
+
+  // --- Tests + questions ----------------------------------------------------
+  // A test has no natural key, so its id is preserved explicitly: `attempts`
+  // rows reference it and a re-seed must not orphan the user's history. A
+  // `tests` row is therefore never deleted — only inserted or updated in place.
+  let testCount = 0;
+  let questionCount = 0;
+  for (const unit of units) {
+    if (!unit.test) continue;
+
+    const unitId = unitIdFor(unit.seq);
+    const payload = {
+      skill: unit.test.skill,
+      title: unit.test.title,
+      duration_minutes: unit.test.duration_minutes,
+      audio_url: unit.test.audio_url,
+      content: unit.test.content,
+    };
+
+    let testId = testIdBySeq.get(unit.seq) ?? null;
+
+    if (testId === null) {
+      const { data: inserted, error: insertTestError } = await supabase
+        .from("tests")
+        .insert(payload)
+        .select("id")
+        .single();
+      if (insertTestError) {
+        throw new SeedError(
+          `Failed to insert test for unit seq ${unit.seq}: ${insertTestError.message}`,
+        );
+      }
+      testId = inserted.id as string;
+
+      const { error: linkError } = await supabase
+        .from("units")
+        .update({ test_id: testId })
+        .eq("id", unitId);
+      if (linkError) {
+        throw new SeedError(
+          `Failed to link test to unit seq ${unit.seq}: ${linkError.message}`,
+        );
+      }
+    } else {
+      const { error: updateTestError } = await supabase
+        .from("tests")
+        .update(payload)
+        .eq("id", testId);
+      if (updateTestError) {
+        throw new SeedError(
+          `Failed to update test for unit seq ${unit.seq}: ${updateTestError.message}`,
+        );
+      }
+    }
+
+    // Questions carry no history of their own, so replacing them wholesale is
+    // safe and keeps the file the single source of truth.
+    const { error: clearError } = await supabase
+      .from("questions")
+      .delete()
+      .eq("test_id", testId);
+    if (clearError) {
+      throw new SeedError(
+        `Failed to clear questions for unit seq ${unit.seq}: ${clearError.message}`,
+      );
+    }
+
+    const { error: insertQuestionsError } = await supabase.from("questions").insert(
+      unit.test.questions.map((q) => ({
+        test_id: testId,
+        qnum: q.qnum,
+        qtype: q.qtype,
+        prompt: q.prompt,
+        options: q.options,
+        answer_key: q.answer_key,
+        explanation_md: q.explanation_md,
+      })),
+    );
+    if (insertQuestionsError) {
+      throw new SeedError(
+        `Failed to insert questions for unit seq ${unit.seq}: ${insertQuestionsError.message}`,
+      );
+    }
+
+    testCount += 1;
+    questionCount += unit.test.questions.length;
+  }
+
+  console.log(
+    `Seeded ${units.length} units, ${vocabCount} vocab words, ` +
+      `${testCount} test(s), ${questionCount} questions` +
+      (linkedCount > 0 ? `, ${linkedCount} bank test link(s)` : ""),
+  );
 }
 
 main().catch((err: unknown) => {
-  if (err instanceof SeedError) {
+  if (isExpectedError(err)) {
     console.error(`\n${err.message}\n`);
   } else {
     console.error(err);

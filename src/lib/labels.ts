@@ -4,6 +4,7 @@
  */
 
 import type { Block, Skill } from "@/lib/roadmap";
+import { USER_TIME_ZONE } from "@/lib/day";
 
 /** Plan: 6 units per week, one flex/rest day. See docs/plan.md. */
 export const UNITS_PER_WEEK = 6;
@@ -55,7 +56,7 @@ export function unitNumber(seq: number): string {
 /** Today's date in the user's timezone, e.g. `Mon 17 Aug`. */
 export function formatToday(now: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Ho_Chi_Minh",
+    timeZone: USER_TIME_ZONE,
     weekday: "short",
     day: "numeric",
     month: "short",

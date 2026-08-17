@@ -8,6 +8,7 @@
  */
 
 import { createClient } from "@/lib/supabase/server";
+import { today } from "@/lib/day";
 
 export type Block =
   | "diagnostic"
@@ -66,17 +67,6 @@ function toUnit(row: UnitRow): Unit {
     estMinutes: row.est_minutes,
     elsaTask: row.elsa_task,
   };
-}
-
-/** Today's date in the user's timezone, as `YYYY-MM-DD` for a Postgres `date`. */
-function todayInHoChiMinh(): string {
-  // en-CA formats as YYYY-MM-DD, which is exactly the `date` literal we need.
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Ho_Chi_Minh",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
 }
 
 /** Every unit ordered by seq, plus the set of unit ids already completed. */
@@ -178,7 +168,7 @@ export async function completeUnit(
   const isFirstCompletion = (inserted ?? []).length > 0;
 
   if (isFirstCompletion) {
-    const day = todayInHoChiMinh();
+    const day = today();
 
     const { data: logRow, error: logReadError } = await supabase
       .from("study_log")

@@ -4,7 +4,7 @@ import { signOutAction } from "@/lib/auth-actions";
 import { formatToday } from "@/lib/labels";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-type Tab = "today" | "session" | "roadmap";
+type Tab = "today" | "session" | "roadmap" | "vocab" | "bank";
 
 const TAB_BASE =
   "rounded-full px-4 py-1.5 text-[13px] font-medium transition-colors";
@@ -16,7 +16,7 @@ function tabStyle(active: boolean) {
 }
 
 /**
- * Sticky app chrome: wordmark + date, the three-tab pill nav, theme and sign-out.
+ * Sticky app chrome: wordmark + date, the tab pill nav, theme and sign-out.
  * `sessionSeq` is the current unit the Session tab points at — null when the
  * roadmap is finished or nothing is seeded yet.
  */
@@ -67,6 +67,22 @@ export function AppHeader({
           style={tabStyle(active === "roadmap")}
         >
           Roadmap
+        </Link>
+        <Link
+          href="/vocab"
+          className={TAB_BASE}
+          style={tabStyle(active === "vocab")}
+          title="Your spaced-repetition word deck"
+        >
+          Vocabulary
+        </Link>
+        <Link
+          href="/bank"
+          className={TAB_BASE}
+          style={tabStyle(active === "bank")}
+          title="Extra practice outside the roadmap"
+        >
+          Practice
         </Link>
       </nav>
 

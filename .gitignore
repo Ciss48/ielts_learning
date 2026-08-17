@@ -40,3 +40,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# user content — copyrighted source PDFs and AI-extracted drafts never enter
+# version control (CLAUDE.md). content/seed/ IS tracked: it is architect-authored.
+/content/raw/
+/content/staged/

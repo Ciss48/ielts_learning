@@ -1,12 +1,18 @@
 import Link from "next/link";
 
 import { getCurrentUnit, getRoadmap } from "@/lib/roadmap";
+import { DEFAULT_HEATMAP_WEEKS, getHeatmap, getStreak } from "@/lib/stats";
 import { BLOCK_LABEL, unitNumber, weekOfSeq } from "@/lib/labels";
 import { AppHeader } from "@/components/AppHeader";
 import { SkillBadge } from "@/components/SkillBadge";
+import { StudyHeatmap } from "@/components/StudyHeatmap";
 
 export default async function TodayPage() {
-  const unit = await getCurrentUnit();
+  const [unit, heatmap, streak] = await Promise.all([
+    getCurrentUnit(),
+    getHeatmap(),
+    getStreak(),
+  ]);
   // A null pointer means either "finished everything" or "nothing seeded yet";
   // only the roadmap length tells them apart, and the two need different copy.
   const nothingSeeded = unit ? false : (await getRoadmap()).length === 0;
@@ -69,6 +75,12 @@ export default async function TodayPage() {
         ) : (
           <EmptyState nothingSeeded={nothingSeeded} />
         )}
+
+        <StudyHeatmap
+          days={heatmap}
+          streak={streak}
+          weeks={DEFAULT_HEATMAP_WEEKS}
+        />
       </main>
     </div>
   );

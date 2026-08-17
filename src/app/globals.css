@@ -26,6 +26,9 @@
   --sk-vocab: oklch(0.5 0.08 195);
   --sk-mixed: oklch(0.55 0.01 220);
   --heat-0: oklch(0.93 0.006 200);
+  /* Added in Phase 02: timer urgency + incorrect answers. Not a skill colour —
+     reusing --sk-speaking for "wrong" would tie meaning to the wrong axis. */
+  --warn: oklch(0.52 0.16 25);
 }
 
 :root[data-theme="dark"] {
@@ -46,6 +49,7 @@
   --sk-vocab: oklch(0.75 0.08 195);
   --sk-mixed: oklch(0.72 0.01 220);
   --heat-0: oklch(0.27 0.01 220);
+  --warn: oklch(0.72 0.14 25);
 }
 
 /* Expose the tokens as Tailwind utilities: bg-surface, text-dim, border-line… */
@@ -59,6 +63,7 @@
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
+  --color-warn: var(--warn);
 
   --font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --font-serif: Newsreader, Georgia, serif;
@@ -199,4 +204,77 @@ body {
 .prose-lesson th {
   font-weight: 600;
   color: var(--dim);
+}
+
+/*
+ * Reading-passage typography for the Practice split view (Phase 02). Matches
+ * the design export's passage pane: Newsreader 17.5px/1.7, capped at 68ch so
+ * line length stays readable when the pane is wide.
+ */
+.prose-passage {
+  max-width: 68ch;
+  font-family: var(--font-serif);
+  font-size: 17.5px;
+  line-height: 1.7;
+  color: var(--text);
+}
+.prose-passage > :first-child {
+  margin-top: 0;
+}
+.prose-passage p {
+  margin: 0 0 16px;
+}
+.prose-passage h1 {
+  margin: 0 0 20px;
+  font-weight: 500;
+  font-size: 26px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.prose-passage h2 {
+  margin: 26px 0 10px;
+  font-family: var(--font-sans);
+  font-size: 14.5px;
+  font-weight: 600;
+}
+.prose-passage strong {
+  font-weight: 600;
+}
+.prose-passage em {
+  font-style: italic;
+}
+.prose-passage ul,
+.prose-passage ol {
+  margin: 0 0 16px;
+  padding-left: 22px;
+}
+
+/* Per-question explanations on the Review step: sans, tighter than the lesson. */
+.prose-explanation {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--dim);
+}
+.prose-explanation > :first-child {
+  margin-top: 0;
+}
+.prose-explanation > :last-child {
+  margin-bottom: 0;
+}
+.prose-explanation p {
+  margin: 0 0 10px;
+}
+.prose-explanation em {
+  font-style: italic;
+}
+.prose-explanation strong {
+  font-weight: 600;
+  color: var(--text);
+}
+.prose-explanation code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--surface-2);
 }
