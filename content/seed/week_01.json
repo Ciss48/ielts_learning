@@ -1,0 +1,73 @@
+{
+  "units": [
+    {
+      "seq": 1,
+      "block": "foundation",
+      "skill": "mixed",
+      "title": "Orientation: how band 7.0 is actually earned",
+      "est_minutes": 45,
+      "elsa_task": "15 min ELSA: take the onboarding assessment so the app calibrates your level",
+      "strategy_md": "## What band 7.0 requires\n\nYour overall band is the average of four skills, rounded to the nearest 0.5. From a 5.5 baseline, the realistic path to 7.0 is **not** four equal 7.0s — it is L 7.5, R 7.0, S 6.5, W 6.5. Listening and Reading are the cheapest bands to buy because they are objective: in Academic Reading, 30/40 correct ≈ band 7. Writing is the most expensive; almost nobody's Writing is their highest skill.\n\n## What this means for your study plan\n\n1. **Listening & Reading**: your score is a function of technique + vocabulary + timed practice volume. This app will drill all three.\n2. **Writing**: your score is a function of structure + grammatical accuracy. We rebuild it from the paragraph level up, starting this week.\n3. **Speaking**: fluency beats accuracy at 6.5. Daily 15-minute ELSA sessions handle pronunciation; the app schedules them on every unit.\n\n## Your only job\n\nOpen this app every day and complete the unit it shows you. Never decide what to study — that decision is already made. Missing a day costs nothing: the roadmap waits for you.\n\n**Today's task**: read this, do the ELSA onboarding, mark complete.",
+      "vocab": []
+    },
+    {
+      "seq": 2,
+      "block": "foundation",
+      "skill": "vocab",
+      "title": "Eight verbs that raise your Writing Task 2 band",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: Word Stress course — practice today's 8 verbs aloud",
+      "strategy_md": "## Why verbs, not nouns\n\nExaminers score *Lexical Resource* partly on whether you avoid the basic verbs every 5.5 candidate uses: **make, get, give, have, do**. Swapping them for precise academic verbs is the fastest visible upgrade in an essay.\n\n## Today's 8 verbs\n\nStudy the list below this lesson. For each verb: read the example, cover it, and write your own sentence about a familiar topic (work, technology, education in Vietnam).\n\n| Instead of... | Write... |\n|---|---|\n| make worse | **exacerbate** |\n| cause | **give rise to / trigger** |\n| reduce | **mitigate / alleviate** |\n| show | **demonstrate / illustrate** |\n| help | **facilitate** |\n\n## The rule of honest usage\n\nOnly use a word you can use *correctly in a sentence you built yourself*. One accurate 'mitigate' scores; three decorative ones misused cost you. That is why this app makes you write your own examples instead of memorizing definitions.\n\n**Today's task**: write 8 original sentences (one per verb) in a notebook, then mark the words you did NOT already know — those enter your review queue when the vocabulary system ships.",
+      "vocab": [
+        { "word": "exacerbate", "ipa": "/ɪɡˈzæsərbeɪt/", "meaning_en": "to make a problem or bad situation worse", "meaning_vi": "làm trầm trọng thêm", "example": "Heavy traffic exacerbates air pollution in Hanoi." },
+        { "word": "mitigate", "ipa": "/ˈmɪtɪɡeɪt/", "meaning_en": "to make something less harmful or severe", "meaning_vi": "giảm nhẹ, làm dịu bớt", "example": "Planting trees can mitigate the urban heat island effect." },
+        { "word": "alleviate", "ipa": "/əˈliːvieɪt/", "meaning_en": "to make pain or a problem less severe", "meaning_vi": "làm giảm bớt (đau đớn, khó khăn)", "example": "Remote work alleviates the pressure on public transport." },
+        { "word": "facilitate", "ipa": "/fəˈsɪlɪteɪt/", "meaning_en": "to make an action or process easier", "meaning_vi": "tạo điều kiện thuận lợi", "example": "Online platforms facilitate access to education." },
+        { "word": "demonstrate", "ipa": "/ˈdemənstreɪt/", "meaning_en": "to show clearly with evidence", "meaning_vi": "chứng minh, cho thấy rõ", "example": "Recent studies demonstrate a link between sleep and memory." },
+        { "word": "trigger", "ipa": "/ˈtrɪɡər/", "meaning_en": "to cause something to start or happen", "meaning_vi": "kích hoạt, gây ra", "example": "The policy change triggered a wave of protests." },
+        { "word": "give rise to", "ipa": "/ɡɪv raɪz tuː/", "meaning_en": "to cause something to happen or exist", "meaning_vi": "dẫn đến, làm nảy sinh", "example": "Rapid urbanization gives rise to housing shortages." },
+        { "word": "undermine", "ipa": "/ˌʌndərˈmaɪn/", "meaning_en": "to gradually weaken or damage something", "meaning_vi": "làm suy yếu, xói mòn", "example": "Misinformation undermines public trust in science." }
+      ]
+    },
+    {
+      "seq": 3,
+      "block": "foundation",
+      "skill": "reading",
+      "title": "Skimming vs scanning: two different tools",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: daily pronunciation practice",
+      "strategy_md": "## The 5.5 reading problem\n\nAt 5.5, most candidates read every word at one speed and run out of time on Passage 3. Band 7 readers use two deliberate modes:\n\n**Skimming** = reading FOR STRUCTURE, not detail. First and last sentence of each paragraph, ignore everything else. Goal: after 2 minutes you can say what each paragraph is *about* in 3-4 words. Used once, at the start of a passage.\n\n**Scanning** = hunting FOR A TOKEN: a name, a year, a number, a capitalized word from the question. Your eyes jump, they do not read. Used per-question.\n\n## The order of operations (memorize this)\n\n1. Skim the passage (2 min) → write a 3-word label next to each paragraph.\n2. Read the question, underline its *anchor* (name/date/number/rare word).\n3. Use your paragraph labels to predict WHERE the answer lives.\n4. Scan that paragraph for the anchor. Read carefully ONLY the 1-2 sentences around it.\n\n## Practice (no timer today)\n\nTake any English news article (~800 words, e.g. from BBC Future). Skim it in 2 minutes and write your paragraph labels. Then ask yourself three questions about specific facts and locate each one by scanning. Notice how little of the article you actually needed to read carefully — that is the entire secret of IELTS Reading timing.",
+      "vocab": []
+    },
+    {
+      "seq": 4,
+      "block": "foundation",
+      "skill": "writing",
+      "title": "Task 2 anatomy: the 4-paragraph machine",
+      "est_minutes": 75,
+      "elsa_task": "15 min ELSA: daily pronunciation practice",
+      "strategy_md": "## One structure for every essay\n\nBand 7 Task 2 essays are boring on purpose. Use the same machine every time:\n\n1. **Introduction (2 sentences)** — paraphrase the question, then state your position in one clear sentence. No hooks, no 'nowadays'.\n2. **Body 1 (4-5 sentences)** — topic sentence → explain → example → mini-conclusion.\n3. **Body 2 (4-5 sentences)** — same shape, second idea.\n4. **Conclusion (1-2 sentences)** — restate position in different words. Never add new ideas.\n\n## The thesis sentence is 50% of Task Response\n\nA weak thesis: *\"This essay will discuss both views.\"* A band-7 thesis: *\"Although remote work reduces commuting stress, I believe its damage to team collaboration outweighs this benefit.\"* — position + both key ideas, in one sentence. The examiner now knows your entire essay before reading it. That is what 'clear position throughout' means in the band descriptors.\n\n## Today's drill\n\nWrite ONLY introductions (2 sentences each) for these three prompts — no full essays:\n\n1. *Some believe university education should be free for everyone.*\n2. *Many companies now allow employees to work from home.*\n3. *Governments should invest more in public transport than in roads.*\n\nFor each: one paraphrase sentence + one thesis sentence with your position and two ideas. Compare against the pattern above, then mark complete.",
+      "vocab": []
+    },
+    {
+      "seq": 5,
+      "block": "foundation",
+      "skill": "listening",
+      "title": "Prediction: answer the question before the audio starts",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: numbers, dates and spelling drills",
+      "strategy_md": "## Why you 'miss' answers\n\nAt 5.5, you lose Listening points not because you can't hear, but because you don't know *what you are listening for*. The audio only plays once; prediction is how you aim.\n\n## The prediction routine\n\nIn every pause before a section, for each question decide:\n\n1. **Word type** — is the answer a number, a name, a noun, a day, a price?\n2. **Format constraints** — 'NO MORE THAN TWO WORDS' means a 3-word answer is wrong even if correct.\n3. **Trap awareness** — Section 1 ALWAYS corrects itself: a speaker says one time/price, then changes it ('actually, let's make it Thursday'). The first mention is usually the trap.\n\n## Drill (no audio needed today)\n\nBelow are five gap-fill stems. For each, write the word TYPE you expect:\n\n1. The meeting will be held on ______ → (day)\n2. Total cost: $______ → (number)\n3. Please contact Ms ______ → (surname, will be spelled out)\n4. Bring your ______ card → (noun: ID/membership/library)\n5. The tour starts at ______ → (time)\n\nThis 10-second habit per question is worth roughly a full band in Sections 1-2. From next week, every listening unit in this app starts with a prediction step before the audio plays.",
+      "vocab": []
+    },
+    {
+      "seq": 6,
+      "block": "foundation",
+      "skill": "mixed",
+      "title": "Week 1 review: the paraphrasing engine",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: free conversation mode — describe your week in English",
+      "strategy_md": "## Paraphrasing is the whole exam\n\nEvery IELTS skill secretly tests one ability: recognizing or producing *the same meaning in different words*. Reading answers never reuse the question's words. Listening audio paraphrases the question stem. Writing introductions must paraphrase the prompt. This is why paraphrasing closes Week 1.\n\n## Three legal moves\n\n1. **Synonym swap** — *important* → *crucial*; *children* → *young people*. (Danger: near-synonyms with wrong register, e.g. *kids* in an essay.)\n2. **Word-form change** — *pollute* → *pollution* → *polluted*; forces the sentence to restructure around it.\n3. **Structure flip** — active↔passive, or clause reordering: *Cars cause pollution* → *Pollution is largely caused by cars*.\n\nBand 7 paraphrasing uses moves 2 and 3, not just move 1.\n\n## Today's drill\n\nParaphrase each sentence twice — once with a word-form change, once with a structure flip:\n\n1. The government should reduce taxes on electric vehicles.\n2. Social media has changed how young people communicate.\n3. Many tourists visit Vietnam because the food is excellent.\n4. Working long hours damages employees' health.\n5. Universities are becoming more expensive every year.\n\nThen review this week's 8 verbs from Unit 2 — can you still write a correct sentence with each? Mark complete. Next week: question-type intros for True/False/Not Given and Task 1 data description.",
+      "vocab": []
+    }
+  ]
+}
