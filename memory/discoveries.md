@@ -596,3 +596,83 @@ where `writing_bank_01.json` already puts them.
 **Status:** self-resolved, no plan.md change needed. If writing tasks ever *should* be
 ingestible, `StagedTest.content` needs the three fields and `ingest.ts` needs a prompt
 that extracts them — a Phase-level decision, not a validator tweak.
+
+---
+
+## [Phase 06] Re-grading stored answers on read can disagree with the stored `score_raw` — Tier: Moderate
+**Finding:** The task file's contract for `getQTypeBreakdown` says to re-grade every
+submitted attempt's stored answers through the existing pure `gradeAnswers`, never to
+persist per-question results. Doing so revealed that the two numbers do not reconcile
+against the current database: the breakdown finds **16 correct out of 22 answered**,
+while the sum of `score_raw` across the same three objective attempts is **18**.
+
+The gap is not a bug in either. Two answers on `…-p2` (Table Completion) were submitted
+in the *joined* form the printed key used — `"two to five / 2-5"` and
+`"South African tunnelling/tunnelling"` — and were correct against the key as it stood
+that day. Phase 04's authorized mechanical normalization then split slash-separated
+answer-key variants into separate entries, so the key is now `["two to five", "2-5"]`.
+The old joined answer matches neither entry. `score_raw` is what the answer scored **on
+the day it was submitted**; the breakdown is what that same answer scores **against the
+key as it stands today**.
+**Impact:** `src/lib/dashboard.ts`. Any figure derived by re-grading (the whole
+question-type table) can drift from any figure read off the attempt row (the trajectory's
+`accuracyPct`, `/bank`'s best-result column, the review screen the user saw at the time).
+The drift only ever appears where content has legitimately changed under a stored answer.
+**How it was handled:** kept as specified, because today's key is the authoritative one —
+a weakness table that grades against a key the content team has since corrected would be
+measuring the wrong thing. The two numbers are not made to agree and are not presented as
+interchangeable: the trajectory shows the score as recorded, the breakdown shows accuracy
+against the current key, and `scripts/check_dashboard_db.ts` prints both totals side by
+side and names every answer responsible whenever they differ. The alternative —
+persisting per-question results at submission time — is a schema change this phase
+explicitly forbids, and would freeze a wrong answer as correct forever.
+**Status:** self-resolved, no plan.md change needed. Worth knowing before any future
+"total questions correct" figure is added: it must state which of the two definitions it
+uses.
+
+---
+
+## [Phase 06] The verbatim-in-essay filter cannot hold TR's evidence — Tier: Moderate
+**Finding:** The calibration ruling asks for per-criterion `errors` as "verbatim quotes
+of the specific errors found for that criterion", listing **unaddressed task parts for
+TR**, and separately asks the code to "apply the same verbatim-in-essay filter to
+`errors` entries". Those two instructions conflict for TR alone: a part of the task the
+candidate *did not address* has, by definition, nothing in the essay to quote. A TR entry
+naming the missing content would be a quote of the task prompt, and the filter would drop
+it every time.
+**Impact:** `src/lib/writing.ts` (`filterVerbatimErrors`). TR only; CC, LR and GRA all
+quote things the candidate actually wrote.
+**How it was handled:** the filter was implemented exactly as specified — verbatim against
+the essay, for all four criteria — because a fabricated quote is the failure mode the
+filter exists to prevent, and softening it for one criterion would have reopened it for
+all. The prompt was written around the constraint instead: TR is told to quote a sentence
+only where the essay *itself* goes off task or is template filler, and to carry a genuinely
+missing task part in its **comment** rather than in `errors`. Nothing is lost
+mechanically, because TR's cap is prompt-level; only LR's is enforced in code. The live
+re-run confirmed the shape: TR came back with `errors: []` and a comment that assessed
+coverage in prose.
+**Status:** self-resolved, no plan.md change needed.
+
+---
+
+## [Phase 06] Only one of the four evidence-tied caps is reliably self-applied — Tier: Moderate
+**Finding:** Rubric v2 states four caps and the code enforces one (LR ≤ 6.0 on three or
+more surviving spelling/word-form errors). The live re-run showed the model applying the
+prompt-level caps *inconsistently*: it correctly held CC at 6.5 and quoted the mechanical
+`Firstly,` / `Secondly,` / `Moreover,` chain as its reason, but for GRA it wrote "these
+errors occur in roughly a third of the sentences, capping the score at 6.5" — invoking a
+cap whose stated value is **6.0** and then awarding 6.5. It also reasoned explicitly and
+correctly about the LR cap ("With two errors, the '3 or more' cap is not triggered"),
+which is evidence the caps are being read rather than ignored.
+**Impact:** `src/lib/writing.ts`'s prompt. The three prompt-level caps are guidance the
+model half-applies; only the code-enforced one is a guarantee.
+**How it was handled:** left as the ruling specifies — the other three caps need reading
+comprehension to apply (what counts as "a third of the sentences", whether a linker chain
+is load-bearing, whether a task part is addressed) and cannot be counted mechanically
+without a second model call. The `errors` inventory is the mitigation that matters: the
+user can now see the three GRA sentences the model based that cap on and judge the number
+themselves, which is exactly what the "AI estimate ±0.5" label asks them to do. The net
+effect on the sample essay was still the intended one — overall 7.0 → 6.5.
+**Status:** self-resolved, no plan.md change needed. If GRA proves persistently generous
+across more essays, its cap is the next candidate for code enforcement: error count
+against sentence count is countable, unlike the CC and TR rules.
