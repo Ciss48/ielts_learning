@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx scripts/seed.ts",
-    "check": "tsx scripts/check_grading.ts && tsx scripts/check_srs.ts && tsx scripts/check_split.ts && tsx scripts/check_stats.ts"
+    "check": "tsx scripts/check_grading.ts && tsx scripts/check_srs.ts && tsx scripts/check_split.ts && tsx scripts/check_stats.ts && tsx scripts/check_writing.ts && tsx scripts/check_dashboard.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1111.0",

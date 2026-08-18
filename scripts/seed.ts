@@ -1,15 +1,22 @@
 /**
- * Content seeder — idempotent by `units.seq`.
+ * Content seeder — idempotent by `units.seq` and by `tests.slug`.
  *
  *   npx tsx scripts/seed.ts content/seed/week_01.json
+ *   npx tsx scripts/seed.ts content/seed/writing_bank_01.json
  *
  * Seed files are architect-owned data. This script validates and loads them
  * verbatim; it never rewrites, normalises or fills in content. A malformed file
  * aborts the run with the offending field path.
  *
- * Validation lives in `scripts/lib/validate.ts`, shared with
- * `scripts/ingest_commit.ts` so hand-authored and AI-extracted content are held
- * to exactly the same rules.
+ * A seed file carries `units` (the roadmap), a top-level `tests` array (bank
+ * tests authored by hand — Phase 05's writing tasks — rather than extracted
+ * from a PDF), or both. Bank tests are written FIRST, so a unit in the same
+ * file can reference one by `test_ref`.
+ *
+ * Validation lives in `scripts/lib/validate.ts` and the id-stable slug upsert in
+ * `scripts/lib/bank_upsert.ts`, both shared with `scripts/ingest_commit.ts` so
+ * hand-authored and AI-extracted content are held to exactly the same rules and
+ * enter the database by exactly the same route.
  */
 
 import { readFileSync } from "node:fs";
@@ -21,12 +28,17 @@ import { resolve } from "node:path";
 process.loadEnvFile(resolve(process.cwd(), ".env.local"));
 
 import { parseSeedFile, ValidationError } from "./lib/validate";
+import { BankUpsertError, upsertBankTest } from "./lib/bank_upsert";
 
 class SeedError extends Error {}
 
-/** Both failure modes print the same way: one clear line, exit 1. */
+/** Every failure mode prints the same way: one clear line, exit 1. */
 function isExpectedError(err: unknown): err is Error {
-  return err instanceof SeedError || err instanceof ValidationError;
+  return (
+    err instanceof SeedError ||
+    err instanceof ValidationError ||
+    err instanceof BankUpsertError
+  );
 }
 
 async function main(): Promise<void> {
@@ -48,19 +60,51 @@ async function main(): Promise<void> {
     );
   }
 
-  const units = parseSeedFile(json);
+  const { units, tests: bankTestsFromFile } = parseSeedFile(json);
   units.sort((a, b) => a.seq - b.seq);
 
   const { createAdminClient } = await import("../src/lib/supabase/admin");
   const supabase = createAdminClient();
 
+  const testIdBySlug = new Map<string, string>();
+
+  // --- Bank tests -----------------------------------------------------------
+  // Written before the units, so a `test_ref` in the same file resolves. The
+  // upsert is `ingest_commit.ts`'s, not a copy of it: a slug that already exists
+  // keeps its id, so re-seeding never orphans an attempt.
+  let bankInserted = 0;
+  let bankUpdated = 0;
+  let bankQuestions = 0;
+  for (const test of bankTestsFromFile) {
+    const { testId, action, questions } = await upsertBankTest(supabase, {
+      slug: test.slug,
+      skill: test.skill,
+      title: test.title,
+      // Provenance: this file authored the test, and saying so distinguishes it
+      // from the ingested ones at a glance in the database.
+      source: fileArg,
+      durationMinutes: test.duration_minutes,
+      content: test.content,
+      // Seed files carry a literal `audio_url`; there is no upload step here.
+      audioUrl: test.audio_url,
+      questions: test.questions,
+    });
+    testIdBySlug.set(test.slug, testId);
+    bankQuestions += questions;
+    if (action === "inserted") bankInserted += 1;
+    else bankUpdated += 1;
+  }
+
   // --- Bank test references -------------------------------------------------
   // A unit may link a bank test by slug instead of embedding one. Resolve every
   // slug up front so an unknown one aborts before anything is written.
   const referencedSlugs = [
-    ...new Set(units.map((u) => u.test_ref).filter((s): s is string => s !== null)),
+    ...new Set(
+      units
+        .map((u) => u.test_ref)
+        .filter((s): s is string => s !== null && !testIdBySlug.has(s)),
+    ),
   ];
-  const testIdBySlug = new Map<string, string>();
 
   if (referencedSlugs.length > 0) {
     const { data: bankTests, error: bankError } = await supabase
@@ -82,6 +126,17 @@ async function main(): Promise<void> {
           "or fix the slug in the seed file.",
       );
     }
+  }
+
+  // A bank-only file (no `units` key) is done here: everything below is roadmap
+  // work, and an empty upsert would be a query with no rows to write.
+  if (units.length === 0) {
+    console.log(
+      `Seeded ${bankTestsFromFile.length} bank test(s) — ${bankInserted} inserted, ` +
+        `${bankUpdated} updated — with ${bankQuestions} question(s). ` +
+        "No units in this file. Practise them at /bank.",
+    );
+    return;
   }
 
   // --- Roadmap pointer invariant -------------------------------------------
@@ -347,7 +402,11 @@ async function main(): Promise<void> {
   console.log(
     `Seeded ${units.length} units, ${vocabCount} vocab words, ` +
       `${testCount} test(s), ${questionCount} questions` +
-      (linkedCount > 0 ? `, ${linkedCount} bank test link(s)` : ""),
+      (linkedCount > 0 ? `, ${linkedCount} bank test link(s)` : "") +
+      (bankTestsFromFile.length > 0
+        ? `, ${bankTestsFromFile.length} bank test(s) (${bankInserted} inserted, ` +
+          `${bankUpdated} updated, ${bankQuestions} question(s))`
+        : ""),
   );
 }
 

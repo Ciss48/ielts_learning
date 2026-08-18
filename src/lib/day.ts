@@ -18,15 +18,30 @@
 
 export const USER_TIME_ZONE = "Asia/Ho_Chi_Minh";
 
+// en-CA formats as YYYY-MM-DD, which is exactly the `date` literal we need.
+const DAY_FORMAT = new Intl.DateTimeFormat("en-CA", {
+  timeZone: USER_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/**
+ * The calendar day, in the user's timezone, that an instant falls on.
+ *
+ * `attempts.started_at` / `submitted_at` are `timestamptz` — instants, not days
+ * — so anything that groups attempts by date has to come through here. Slicing
+ * the ISO string would give the UTC day, which is the day before for anything
+ * submitted before 7am local. Added in Phase 06 for the dashboard's
+ * trajectories; `today()` is now the same function applied to now.
+ */
+export function dayOfInstant(instant: string | Date): string {
+  return DAY_FORMAT.format(new Date(instant));
+}
+
 /** Today in the user's timezone as `YYYY-MM-DD`. */
 export function today(): string {
-  // en-CA formats as YYYY-MM-DD, which is exactly the `date` literal we need.
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: USER_TIME_ZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+  return dayOfInstant(new Date());
 }
 
 function toUtc(day: string): Date {

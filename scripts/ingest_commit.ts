@@ -10,7 +10,9 @@
  * Discipline inherited from Phase 02: a `tests` row is never deleted, because
  * `attempts` reference it. A slug that already exists is UPDATED in place, so
  * its id — and the user's attempt history — survives re-committing. Questions
- * carry no history and are replaced wholesale.
+ * carry no history and are replaced wholesale. That upsert lives in
+ * `scripts/lib/bank_upsert.ts` since Phase 05, shared with `seed.ts`, which now
+ * writes hand-authored bank tests through exactly the same path.
  */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -19,13 +21,18 @@ import { basename, join, resolve } from "node:path";
 process.loadEnvFile(resolve(process.cwd(), ".env.local"));
 
 import { parseStagedFile, ValidationError, type StagedTest } from "./lib/validate";
+import { BankUpsertError, upsertBankTest } from "./lib/bank_upsert";
 
 const RAW_DIR = resolve(process.cwd(), "content/raw");
 
 class CommitError extends Error {}
 
 function isExpectedError(err: unknown): err is Error {
-  return err instanceof CommitError || err instanceof ValidationError;
+  return (
+    err instanceof CommitError ||
+    err instanceof ValidationError ||
+    err instanceof BankUpsertError
+  );
 }
 
 interface CommitRow {
@@ -159,97 +166,28 @@ async function main(): Promise<void> {
   const rows: CommitRow[] = [];
 
   for (const test of file.tests) {
-    const { data: existing, error: lookupError } = await supabase
-      .from("tests")
-      .select("id, audio_url")
-      .eq("slug", test.slug)
-      .maybeSingle();
-    if (lookupError) {
-      throw new CommitError(
-        `Failed to look up slug "${test.slug}": ${lookupError.message}`,
-      );
-    }
-
+    // Re-committing without R2 configured must not wipe a URL that is already
+    // stored; a null here tells the upsert to leave `audio_url` untouched.
     const audioUrl = await commitAudio(test);
 
-    const payload = {
+    const { action, previousAudioUrl, questions } = await upsertBankTest(supabase, {
       slug: test.slug,
       skill: test.skill,
       title: test.title,
       source: file.source,
-      duration_minutes: test.duration_minutes,
+      durationMinutes: test.duration_minutes,
       content: test.content,
-      // Re-committing without R2 configured must not wipe a URL that is already
-      // stored; only a successful upload changes it.
-      ...(audioUrl !== null ? { audio_url: audioUrl } : {}),
-    };
-
-    let testId: string;
-    let action: CommitRow["action"];
-
-    if (existing) {
-      testId = existing.id as string;
-      action = "updated";
-      const { error: updateError } = await supabase
-        .from("tests")
-        .update(payload)
-        .eq("id", testId);
-      if (updateError) {
-        throw new CommitError(
-          `Failed to update test "${test.slug}": ${updateError.message}`,
-        );
-      }
-    } else {
-      action = "inserted";
-      const { data: inserted, error: insertError } = await supabase
-        .from("tests")
-        .insert(payload)
-        .select("id")
-        .single();
-      if (insertError) {
-        throw new CommitError(
-          `Failed to insert test "${test.slug}": ${insertError.message}`,
-        );
-      }
-      testId = inserted.id as string;
-    }
-
-    const { error: clearError } = await supabase
-      .from("questions")
-      .delete()
-      .eq("test_id", testId);
-    if (clearError) {
-      throw new CommitError(
-        `Failed to clear questions for "${test.slug}": ${clearError.message}`,
-      );
-    }
-
-    const { error: insertQuestionsError } = await supabase.from("questions").insert(
-      test.questions.map((q) => ({
-        test_id: testId,
-        qnum: q.qnum,
-        qtype: q.qtype,
-        prompt: q.prompt,
-        options: q.options,
-        answer_key: q.answer_key,
-        explanation_md: q.explanation_md,
-      })),
-    );
-    if (insertQuestionsError) {
-      throw new CommitError(
-        `Failed to insert questions for "${test.slug}": ${insertQuestionsError.message}`,
-      );
-    }
+      audioUrl,
+      questions: test.questions,
+    });
 
     rows.push({
       slug: test.slug,
       action,
-      questions: test.questions.length,
+      questions,
       audio:
         audioUrl ??
-        (test.audio_file === null
-          ? "—"
-          : ((existing?.audio_url as string | null) ?? "skipped")),
+        (test.audio_file === null ? "—" : (previousAudioUrl ?? "skipped")),
     });
   }
 

@@ -18,6 +18,13 @@
  * Staged files may violate both — `ingest.ts` records them as warnings so the
  * user can see what the model failed to extract — but committing them is
  * refused.
+ *
+ * Phase 05 inverts rule 2 for exactly one question type. An `essay` question is
+ * graded by a model against the band descriptors, not by string comparison, so
+ * it has no answer key at all: `answer_key` MUST be `[]` and `options` MUST be
+ * null. A writing test is the whole task, so it carries exactly one such
+ * question plus the task itself (`task_type` / `min_words` / `prompt_md`) in
+ * `content`.
  */
 
 import { normalizeAnswer } from "../../src/lib/normalize";
@@ -56,6 +63,17 @@ export const QTYPES = [
 
 /** Question types where the answer must be one of the printed options. */
 export const CHOICE_QTYPES = ["mcq", "tfng", "ynng", "matching"] as const;
+
+/**
+ * The two IELTS writing tasks. Deliberately duplicated from
+ * `src/lib/writing.ts` rather than imported: this module is loaded by
+ * `seed.ts` / `ingest.ts` through a static import, and `writing.ts` reaches
+ * `config.ts`, which reads `process.env` at module scope — before those scripts
+ * have run `process.loadEnvFile`. Two string literals are a cheaper price than
+ * an AI client that silently starts with no API key.
+ */
+export const WRITING_TASK_TYPES = ["task1", "task2"] as const;
+export type WritingTaskType = (typeof WRITING_TASK_TYPES)[number];
 
 /** Accepted range for a staged test's duration, in minutes. */
 export const MIN_DURATION_MINUTES = 5;
@@ -105,6 +123,17 @@ export interface SeedUnit {
   test: SeedTest | null;
   /** The slug of a bank test to link instead of embedding one. */
   test_ref: string | null;
+}
+
+/** A bank test authored by hand in a seed file, rather than ingested. */
+export interface SeedBankTest extends SeedTest {
+  slug: string;
+}
+
+/** What a seed file may contain: roadmap units, bank tests, or both. */
+export interface SeedFile {
+  units: SeedUnit[];
+  tests: SeedBankTest[];
 }
 
 export interface StagedTest {
@@ -254,6 +283,36 @@ function checkAnswerKeyRules(
   });
 }
 
+/**
+ * The essay rules — rule 2 inverted. An essay is graded against the band
+ * descriptors by `src/lib/writing.ts`, so a stored answer key could only ever be
+ * a model answer masquerading as a key; the grader would then mark a perfectly
+ * good essay wrong for not matching it. `options` is meaningless for the same
+ * reason. `explanation_md` stays optional and is normally null: the feedback is
+ * generated per attempt, not authored per question.
+ */
+function checkEssayRules(
+  question: SeedQuestion,
+  field: string,
+  sink: ProblemSink,
+): void {
+  if (question.answer_key.length > 0) {
+    report(
+      sink,
+      `${field}.answer_key`,
+      `an essay question is graded against the band descriptors, not by string ` +
+        `comparison — it must be [], got ${JSON.stringify(question.answer_key)}`,
+    );
+  }
+  if (question.options !== null) {
+    report(
+      sink,
+      `${field}.options`,
+      `an essay question has no options — expected null, got ${JSON.stringify(question.options)}`,
+    );
+  }
+}
+
 export function parseQuestion(
   raw: unknown,
   field: string,
@@ -271,7 +330,11 @@ export function parseQuestion(
     explanation_md: optionalString(raw.explanation_md, `${field}.explanation_md`),
   };
 
-  checkAnswerKeyRules(question, field, sink);
+  if (question.qtype === "essay") {
+    checkEssayRules(question, field, sink);
+  } else {
+    checkAnswerKeyRules(question, field, sink);
+  }
   return question;
 }
 
@@ -304,6 +367,9 @@ function parseQuestionList(
 
 // --- seed files --------------------------------------------------------------
 
+/** Lowercase, digits and single hyphens — it is a URL path segment (`/bank/<slug>`). */
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 function parseVocab(raw: unknown, field: string): SeedVocab {
   if (!isRecord(raw)) fail(field, "expected an object");
   return {
@@ -315,13 +381,73 @@ function parseVocab(raw: unknown, field: string): SeedVocab {
   };
 }
 
+/**
+ * A writing test IS its task, so the task lives on the test rather than in the
+ * question prompt: `content.prompt_md` is what the candidate answers,
+ * `min_words` is the length the band descriptors are read against, and
+ * `task_type` decides whether TR means Task Response or Task Achievement.
+ * Exactly one question, because there is exactly one essay to write — a second
+ * one would have nowhere to store its own prompt or its own feedback.
+ */
+function checkWritingTestRules(
+  test: SeedTest,
+  field: string,
+  sink: ProblemSink,
+): void {
+  if (test.skill !== "writing") return;
+
+  if (test.questions.length !== 1) {
+    report(
+      sink,
+      `${field}.questions`,
+      `a writing test is one task and carries exactly one question, got ${test.questions.length}`,
+    );
+  }
+  for (const [i, question] of test.questions.entries()) {
+    if (question.qtype !== "essay") {
+      report(
+        sink,
+        `${field}.questions[${i}].qtype`,
+        `a writing test's question must be an essay, got ${JSON.stringify(question.qtype)}`,
+      );
+    }
+  }
+
+  const { task_type: taskType, min_words: minWords, prompt_md: promptMd } = test.content;
+
+  if (
+    typeof taskType !== "string" ||
+    !(WRITING_TASK_TYPES as readonly string[]).includes(taskType)
+  ) {
+    report(
+      sink,
+      `${field}.content.task_type`,
+      `expected one of ${WRITING_TASK_TYPES.join(" | ")}, got ${JSON.stringify(taskType)}`,
+    );
+  }
+  if (typeof minWords !== "number" || !Number.isInteger(minWords) || minWords <= 0) {
+    report(
+      sink,
+      `${field}.content.min_words`,
+      `expected a positive integer, got ${JSON.stringify(minWords)}`,
+    );
+  }
+  if (typeof promptMd !== "string" || promptMd.trim() === "") {
+    report(
+      sink,
+      `${field}.content.prompt_md`,
+      `expected a non-empty string — this is the task the candidate answers, got ${JSON.stringify(promptMd)}`,
+    );
+  }
+}
+
 function parseSeedTest(raw: unknown, field: string, sink: ProblemSink): SeedTest {
   if (!isRecord(raw)) fail(field, "expected an object");
 
   const content = raw.content ?? {};
   if (!isRecord(content)) fail(`${field}.content`, "expected an object");
 
-  return {
+  const test: SeedTest = {
     skill: requireEnum(raw.skill, `${field}.skill`, TEST_SKILLS),
     title: requireString(raw.title, `${field}.title`),
     duration_minutes: requirePositiveInt(
@@ -332,22 +458,85 @@ function parseSeedTest(raw: unknown, field: string, sink: ProblemSink): SeedTest
     content,
     questions: parseQuestionList(raw.questions, `${field}.questions`, sink),
   };
+
+  checkWritingTestRules(test, field, sink);
+  return test;
+}
+
+/**
+ * A bank test authored in a seed file: the embedded-test shape plus the slug it
+ * is addressed by (`/bank/<slug>`, and `test_ref` from a unit).
+ */
+function parseSeedBankTest(
+  raw: unknown,
+  field: string,
+  sink: ProblemSink,
+): SeedBankTest {
+  if (!isRecord(raw)) fail(field, "expected an object");
+
+  const slug = requireString(raw.slug, `${field}.slug`);
+  if (!SLUG_PATTERN.test(slug)) {
+    fail(
+      `${field}.slug`,
+      `${JSON.stringify(slug)} is not a valid slug — lowercase letters, digits and single hyphens only`,
+    );
+  }
+
+  return { slug, ...parseSeedTest(raw, field, sink) };
 }
 
 /**
  * A seed file is architect-owned data, so it is always validated hard.
- * `test` (embedded) and `test_ref` (a bank slug) are mutually exclusive.
+ *
+ * It carries `units` (the roadmap), a top-level `tests` array (bank tests
+ * authored by hand rather than ingested from a PDF), or both. A unit's `test`
+ * (embedded) and `test_ref` (a bank slug) stay mutually exclusive; a `test_ref`
+ * may name a slug defined in the same file's `tests`, because the seeder writes
+ * the bank tests first.
  */
-export function parseSeedFile(json: unknown): SeedUnit[] {
+export function parseSeedFile(json: unknown): SeedFile {
   const sink = hardSink();
 
   if (!isRecord(json)) fail("<root>", "expected a JSON object");
-  if (!Array.isArray(json.units)) fail("units", "expected an array");
-  if (json.units.length === 0) fail("units", "is empty — nothing to seed");
+
+  const hasUnits = json.units !== undefined && json.units !== null;
+  const hasTests = json.tests !== undefined && json.tests !== null;
+  if (!hasUnits && !hasTests) {
+    fail("<root>", "expected a `units` array, a `tests` array, or both");
+  }
+
+  return {
+    units: hasUnits ? parseSeedUnits(json.units, sink) : [],
+    tests: hasTests ? parseSeedBankTests(json.tests, sink) : [],
+  };
+}
+
+function parseSeedBankTests(raw: unknown, sink: ProblemSink): SeedBankTest[] {
+  if (!Array.isArray(raw)) fail("tests", "expected an array");
+  if (raw.length === 0) fail("tests", "is empty — omit the key rather than seeding nothing");
+
+  const seenSlug = new Map<string, number>();
+  return raw.map((entry, i) => {
+    const test = parseSeedBankTest(entry, `tests[${i}]`, sink);
+    const previous = seenSlug.get(test.slug);
+    if (previous !== undefined) {
+      fail(
+        `tests[${i}].slug`,
+        `duplicate slug ${JSON.stringify(test.slug)}, already used by tests[${previous}]`,
+      );
+    }
+    seenSlug.set(test.slug, i);
+    return test;
+  });
+}
+
+function parseSeedUnits(rawUnits: unknown, sink: ProblemSink): SeedUnit[] {
+  if (!Array.isArray(rawUnits)) fail("units", "expected an array");
+  if (rawUnits.length === 0) fail("units", "is empty — nothing to seed");
 
   const seen = new Map<number, number>();
 
-  return json.units.map((raw, i) => {
+  return rawUnits.map((raw, i) => {
     const field = `units[${i}]`;
     if (!isRecord(raw)) fail(field, "expected an object");
 
@@ -401,9 +590,6 @@ export function parseSeedFile(json: unknown): SeedUnit[] {
 }
 
 // --- staged files ------------------------------------------------------------
-
-/** Lowercase, digits and single hyphens — it is a URL path segment (`/bank/<slug>`). */
-const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function parseStagedContent(
   raw: unknown,

@@ -1,0 +1,70 @@
+{
+  "tests": [
+    {
+      "slug": "writing-t2-university-fees",
+      "skill": "writing",
+      "title": "Task 2: University fees",
+      "duration_minutes": 40,
+      "audio_url": null,
+      "content": {
+        "task_type": "task2",
+        "min_words": 250,
+        "prompt_md": "Some people believe that university education should be free and funded by the government, while others believe that students should pay for their own studies.\n\n**Discuss both these views and give your own opinion.**\n\nGive reasons for your answer and include any relevant examples from your own knowledge or experience.\n\nWrite at least 250 words."
+      },
+      "questions": [
+        {
+          "qnum": 1,
+          "qtype": "essay",
+          "prompt": "Write your essay in response to the task above. You should spend about 40 minutes on this task.",
+          "options": null,
+          "answer_key": [],
+          "explanation_md": null
+        }
+      ]
+    },
+    {
+      "slug": "writing-t2-social-media",
+      "skill": "writing",
+      "title": "Task 2: Social media and young people",
+      "duration_minutes": 40,
+      "audio_url": null,
+      "content": {
+        "task_type": "task2",
+        "min_words": 250,
+        "prompt_md": "Many young people today spend a large amount of their free time on social media.\n\n**Why is this the case?**\n\n**Do the advantages of this trend outweigh the disadvantages?**\n\nGive reasons for your answer and include any relevant examples from your own knowledge or experience.\n\nWrite at least 250 words."
+      },
+      "questions": [
+        {
+          "qnum": 1,
+          "qtype": "essay",
+          "prompt": "Write your essay in response to the task above. You should spend about 40 minutes on this task.",
+          "options": null,
+          "answer_key": [],
+          "explanation_md": null
+        }
+      ]
+    },
+    {
+      "slug": "writing-t1-internet-vietnam",
+      "skill": "writing",
+      "title": "Task 1: Internet and landline use in Vietnam",
+      "duration_minutes": 20,
+      "audio_url": null,
+      "content": {
+        "task_type": "task1",
+        "min_words": 150,
+        "prompt_md": "The table below shows the percentage of the population using the internet and the percentage with landline telephone subscriptions in Vietnam between 2005 and 2023.\n\n| Year | Internet users | Landline subscriptions |\n|------|---------------|------------------------|\n| 2005 | 10% | 30% |\n| 2011 | 35% | 20% |\n| 2017 | 58% | 9% |\n| 2023 | 79% | 4% |\n\n**Summarise the information by selecting and reporting the main features, and make comparisons where relevant.**\n\nWrite at least 150 words."
+      },
+      "questions": [
+        {
+          "qnum": 1,
+          "qtype": "essay",
+          "prompt": "Write your report in response to the task above. You should spend about 20 minutes on this task.",
+          "options": null,
+          "answer_key": [],
+          "explanation_md": null
+        }
+      ]
+    }
+  ]
+}

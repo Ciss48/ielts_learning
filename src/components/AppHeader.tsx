@@ -4,7 +4,7 @@ import { signOutAction } from "@/lib/auth-actions";
 import { formatToday } from "@/lib/labels";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-type Tab = "today" | "session" | "roadmap" | "vocab" | "bank";
+type Tab = "today" | "session" | "roadmap" | "vocab" | "bank" | "dashboard";
 
 const TAB_BASE =
   "rounded-full px-4 py-1.5 text-[13px] font-medium transition-colors";
@@ -83,6 +83,14 @@ export function AppHeader({
           title="Extra practice outside the roadmap"
         >
           Practice
+        </Link>
+        <Link
+          href="/dashboard"
+          className={TAB_BASE}
+          style={tabStyle(active === "dashboard")}
+          title="Skill trajectories and question-type weaknesses"
+        >
+          Dashboard
         </Link>
       </nav>
 

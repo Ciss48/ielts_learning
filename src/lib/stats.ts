@@ -123,3 +123,29 @@ export async function getStreak(): Promise<number> {
   const rows = await loadStudyLog();
   return computeStreak(new Set(rows.map((row) => row.day)), today());
 }
+
+/**
+ * The longest run of consecutive days ever recorded, anywhere in the log.
+ *
+ * Pure, and beside `computeStreak` on purpose: the two answer different
+ * questions and are easy to conflate. `computeStreak` is "am I on a run right
+ * now", which is why it is allowed to end yesterday. This one is a personal
+ * best — it never expires, it does not care where `today` is, and a run that
+ * ended in March still counts. A single day is a streak of one.
+ */
+export function computeLongestStreak(days: ReadonlySet<string>): number {
+  let longest = 0;
+  for (const day of days) {
+    // Count a run only from its first day, so each run is walked once.
+    if (days.has(addDays(day, -1))) continue;
+
+    let length = 0;
+    let cursor = day;
+    while (days.has(cursor)) {
+      length += 1;
+      cursor = addDays(cursor, 1);
+    }
+    if (length > longest) longest = length;
+  }
+  return longest;
+}

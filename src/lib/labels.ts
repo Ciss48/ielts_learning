@@ -27,6 +27,27 @@ export const SKILL_COLOR: Record<Skill, string> = {
   mixed: "var(--sk-mixed)",
 };
 
+/**
+ * The question types the player grades, in words. Added in Phase 06 for the
+ * dashboard's weakness table: `gap_fill` is a database enum, not something to
+ * show a person. These are the standard names for the task types, not IELTS
+ * content — no question, key or strategy text lives here.
+ */
+export const QTYPE_LABEL: Record<string, string> = {
+  mcq: "Multiple choice",
+  tfng: "True / False / Not Given",
+  ynng: "Yes / No / Not Given",
+  matching: "Matching",
+  gap_fill: "Gap fill",
+  short_answer: "Short answer",
+  essay: "Essay",
+};
+
+/** Falls back to the raw enum, so a type added later is visible, not invisible. */
+export function qtypeLabel(qtype: string): string {
+  return QTYPE_LABEL[qtype] ?? qtype;
+}
+
 export const BLOCK_LABEL: Record<Block, string> = {
   foundation: "Foundation",
   diagnostic: "Diagnostic",

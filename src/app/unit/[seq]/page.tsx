@@ -6,6 +6,20 @@ import { getDueCards, getUnitVocab } from "@/lib/vocab";
 import { AppHeader } from "@/components/AppHeader";
 import { UnitSession } from "@/components/session/UnitSession";
 
+/**
+ * Grading an essay is one model call that has been measured at 18-94 seconds,
+ * and a malformed reply costs a second one — so the worst realistic case is
+ * around three minutes. A server action runs in the function that serves its own
+ * route segment, which is this page, so the limit has to be raised HERE rather
+ * than on the `"use server"` file. Vercel's default would abort the request
+ * mid-grade and the user would see a failure for work the provider actually did.
+ *
+ * 300s is the Fluid-compute maximum on the Hobby plan; the app never uses
+ * anything like it, because `ai.ts` gives up first (3 attempts x 180s timeout is
+ * its own ceiling and it backs off long before this one).
+ */
+export const maxDuration = 300;
+
 export default async function UnitPage({
   params,
 }: {

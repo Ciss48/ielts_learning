@@ -1,0 +1,148 @@
+{
+  "units": [
+    {
+      "seq": 13,
+      "block": "foundation",
+      "skill": "reading",
+      "title": "Matching features: statements, people, and repeats",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: daily pronunciation practice",
+      "test_ref": "ielts-academic-reading-sample-tasks-2023-p1",
+      "strategy_md": "## The question type built on names\n\nMatching Features gives you a list of statements and a box of people (or theories, or cities), and asks who said or did what. The passage mentions each person in scattered places — your job is index-building, not deep reading.\n\n## Procedure\n\n1. **While skimming, circle every proper name** and note WHERE each appears. One person often shows up in two or three paragraphs — list all locations.\n2. Read statement 1, underline its content anchor (not the name — the *claim*).\n3. Visit each location of each candidate name; the passage will paraphrase the statement, never copy it.\n\n## The rule candidates forget\n\n**Letters can repeat.** Unless the instructions say *you may use any letter more than once* is absent or says *once only*, the same person can be the answer twice — today's test does exactly this. At 5.5, people 'use up' letters and force wrong answers into the leftovers. Judge each statement independently.\n\nPress Begin when ready — 4 questions, and expect one letter to appear twice.",
+      "vocab": []
+    },
+    {
+      "seq": 14,
+      "block": "foundation",
+      "skill": "writing",
+      "title": "Body paragraphs: the PEEL machine",
+      "est_minutes": 75,
+      "elsa_task": "15 min ELSA: daily pronunciation practice",
+      "strategy_md": "## One shape, every body paragraph\n\nBand 7 Coherence & Cohesion means the examiner can predict your paragraph's structure. Use PEEL every time:\n\n1. **P — Point.** Topic sentence: the paragraph's one idea, stated plainly.\n2. **E — Explain.** Why is the point true? One or two sentences of reasoning.\n3. **E — Example.** One concrete case. Invented-but-plausible is fine in IELTS (*\"In Vietnam, ride-hailing apps...\"*) — specific beats vague.\n4. **L — Link.** One sentence tying the point back to your thesis.\n\nFive sentences. If a paragraph runs past six, it almost certainly contains two Points — split it or cut one.\n\n## Today's drill\n\nTake the thesis you wrote in Unit 4 for *\"Governments should invest more in public transport than in roads\"*. Write BOTH body paragraphs in full PEEL shape (one per supporting idea). Then label each sentence P/E/E/L in the margin — if a sentence takes no label, it doesn't belong.\n\nUse at least three verbs from your Week 1 set (mitigate, facilitate, give rise to...) — honestly, in sentences you build yourself.",
+      "vocab": []
+    },
+    {
+      "seq": 15,
+      "block": "foundation",
+      "skill": "reading",
+      "title": "Table completion: passage order and the grammar of gaps",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: numbers and hyphenated words aloud",
+      "test_ref": "ielts-academic-reading-sample-tasks-2023-p2",
+      "strategy_md": "## Completion questions are location + grammar\n\nTable, note, and summary completion all obey two mechanical laws:\n\n1. **Answers come in passage order** (within each column/section of the table). If you found Q10's answer in paragraph C, Q11 lives in C or later — never earlier.\n2. **The gap's grammar tells you the word type before you read anything.** A gap after *the* wants a noun; after *is* wants an adjective or noun phrase; a units column wants a number.\n\n## Word limits are absolute\n\n*NO MORE THAN TWO WORDS AND/OR A NUMBER* means \"two to five\" is a valid three-word... no — count it: it is three words and therefore WRONG even though the fact is right; the printed form \"2-5\" counts as a number and is safe. When a passage offers both a spelled and numeric form, prefer the shorter one.\n\n## Procedure for today's test\n\nRead the table's headers first — they are a map of the passage's structure. For each gap: predict word type → locate the row's territory in the passage → scan for the exact detail. 5 questions. Begin when ready.",
+      "vocab": []
+    },
+    {
+      "seq": 16,
+      "block": "foundation",
+      "skill": "listening",
+      "title": "Section 3: tracking who thinks what",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: conversation mode — discuss opinions on a study topic",
+      "strategy_md": "## The academic conversation\n\nSection 3 is usually two or three students (sometimes with a tutor) discussing an assignment. The questions almost never test facts — they test **opinions and agreement**: *What does Mark think about...? What do they decide to do first?*\n\n## The three traps\n\n1. **The opinion-changer.** A speaker proposes something, the other pushes back, the first *changes their mind*. The answer is the final position, not the first mention.\n2. **Attribution swap.** Both options A and B are spoken aloud — but by different people. Track WHO says it, not just what is said.\n3. **Agreement language ≠ agreement.** *\"I see what you mean, but...\"* is a disagreement. Learn the soft-disagreement set: *I'm not so sure / that's one way to look at it / mm, possibly*.\n\n## Drill (no audio today)\n\nWrite a 6-line dialogue between two students choosing a survey method, where speaker A changes their mind by the end. Read both parts aloud — this doubles as today's ELSA material. From Week 5, Section 3 audio enters your test bank and this becomes a timed exercise.",
+      "vocab": []
+    },
+    {
+      "seq": 17,
+      "block": "foundation",
+      "skill": "reading",
+      "title": "Flow-chart completion: following the process",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: daily pronunciation practice",
+      "test_ref": "ielts-academic-reading-sample-tasks-2023-p3",
+      "strategy_md": "## The question type that draws you a map\n\nFlow-chart completion turns a process from the passage into boxes and arrows, with words missing. The chart is a gift: it tells you the passage's structure before you read a word.\n\n## Procedure\n\n1. **Read the chart first.** The box labels and arrows summarize the process — you now know what to look for and in what order.\n2. **Answers follow the process order**, which almost always matches passage order: the sentence describing step 2 comes after the sentence describing step 1.\n3. **Arrows = sequence language in the text.** When the passage says *then, next, as a result, this in turn* — you are moving to the next box.\n4. **Copy the exact word(s)** from the passage, within the limit. The gap's position in the box phrase tells you the grammar (noun after *the*, etc.).\n\n## Scientific passages: don't try to understand everything\n\nToday's passage explains a biochemical mechanism. You do NOT need to understand it — you need to match structure: *X causes Y*, *instead of A, B happens*. Candidates at 5.5 stall trying to comprehend; band 7 readers treat dense science as a pattern-matching surface.\n\n3 questions, answers in process order. Begin when ready.",
+      "vocab": []
+    },
+    {
+      "seq": 18,
+      "block": "foundation",
+      "skill": "mixed",
+      "title": "Week 3 review: verbs of argument",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: word stress on this week's vocabulary",
+      "strategy_md": "## The language of claims\n\nThis week was about tracking claims — who asserts what (Matching Features), what a stem claims (completion). Today's eight words are the verbs academic English uses to make and report claims. They upgrade Writing Task 2 (*Some contend that...*), sharpen Reading (passages use them constantly), and lift Speaking Part 3.\n\n## Precision notes\n\n- *assert* = state confidently, maybe without proof. *contend* = argue, expecting disagreement.\n- *attribute X to Y* = say Y caused X. Grammar trap: the preposition is fixed.\n- *constitute* = to BE the parts of (*women constitute 40% of the workforce*) — no progressive form.\n- *empirical* = based on observation/experiment, not theory. Pairs with *evidence, data, study*.\n\n## Drill\n\n1. Study the eight words below; write one sentence each about a debate you actually have opinions on (remote work, TikTok, university fees).\n2. Re-do Unit 14's PEEL paragraphs' Point sentences using *contend / assert / attribute*.\n3. Paraphrase flip: rewrite *\"Many researchers believe city trees reduce stress\"* using *attribute*, then using *empirical*.",
+      "vocab": [
+        { "word": "assert", "ipa": "/əˈsɜːrt/", "meaning_en": "to state firmly that something is true", "meaning_vi": "khẳng định, quả quyết", "example": "The report asserts that remote work boosts productivity." },
+        { "word": "contend", "ipa": "/kənˈtend/", "meaning_en": "to argue a position others may dispute", "meaning_vi": "lập luận, tranh luận rằng", "example": "Critics contend that the policy favors large corporations." },
+        { "word": "attribute", "ipa": "/əˈtrɪbjuːt/", "meaning_en": "to say something was caused by something else", "meaning_vi": "quy cho, cho là do", "example": "Economists attribute the recovery to strong exports." },
+        { "word": "constitute", "ipa": "/ˈkɑːnstɪtuːt/", "meaning_en": "to be or form the parts of something", "meaning_vi": "chiếm, cấu thành", "example": "Young people constitute a third of the country's population." },
+        { "word": "derive", "ipa": "/dɪˈraɪv/", "meaning_en": "to obtain something from a source", "meaning_vi": "thu được, bắt nguồn từ", "example": "The city derives most of its income from tourism." },
+        { "word": "hypothesis", "ipa": "/haɪˈpɑːθəsɪs/", "meaning_en": "an idea proposed as a starting point for testing", "meaning_vi": "giả thuyết", "example": "The data did not support the researchers' hypothesis." },
+        { "word": "empirical", "ipa": "/ɪmˈpɪrɪkl/", "meaning_en": "based on observation or experiment, not theory", "meaning_vi": "dựa trên thực nghiệm", "example": "There is little empirical evidence for that claim." },
+        { "word": "underpin", "ipa": "/ˌʌndərˈpɪn/", "meaning_en": "to form the basis or support of something", "meaning_vi": "làm nền tảng cho", "example": "Trust underpins every successful negotiation." }
+      ]
+    },
+    {
+      "seq": 19,
+      "block": "foundation",
+      "skill": "reading",
+      "title": "TFNG under time: extremes and second passes",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: daily pronunciation practice",
+      "test_ref": "ielts-academic-reading-sample-tasks-2023-p4",
+      "strategy_md": "## Round two, with a clock\n\nYou met the FALSE/NOT GIVEN boundary in Week 2. Two upgrades before today's timed set:\n\n## Upgrade 1: extreme words are signals\n\nWhen a statement contains *first, only, all, every, most, never, best* — slow down. Passages rarely make absolute claims, so an absolute statement is usually FALSE (the passage says something weaker) or NOT GIVEN (the passage never ranks). Today's passage is biographical — biographies are full of *first person to...* claims, exactly this trap.\n\n## Upgrade 2: the second-pass rule\n\nSpend a maximum of 60 seconds per TFNG statement on the first pass. Can't decide between FALSE and NOT GIVEN? Mark NG, flag it, move on. Come back only if time remains. Reason: the F/NG boundary is the single biggest time sink in IELTS Reading, and a flagged guess of NG is statistically safer than a burned 3 minutes — the un-decidable ones really are NOT GIVEN more often than not, because contradiction is easy to spot when it exists.\n\n3 questions. Run the full discipline: anchor → scan → confirm/contradict/silent → next.",
+      "vocab": []
+    },
+    {
+      "seq": 20,
+      "block": "foundation",
+      "skill": "writing",
+      "title": "Task 1: the language of comparison",
+      "est_minutes": 75,
+      "elsa_task": "15 min ELSA: reading numbers, percentages and years aloud",
+      "strategy_md": "## Beyond rise and fall\n\nWeek 2 gave you trend verbs. Charts also demand **comparison** — between categories, countries, and time points. Band 7 needs these patterns error-free:\n\n- *twice / three times as high as* — *Coal use was twice as high as gas.*\n- *X, at 45%, was the largest ... , followed by Y and Z, at 30% and 15% respectively.* — the *at + figure* appositive and *respectively* are Task 1 gold.\n- *While A accounted for a third of the total, B made up just 5%.*\n- *The gap between A and B narrowed / widened over the period.*\n\n## Numbers hygiene\n\nApproximate honestly: *just under half, roughly a quarter, around one in five*. Never write a number the chart doesn't show, and never analyze WHY (no *because people prefer...* — Task 1 reports, it never explains).\n\n## Drill\n\nDescribed chart: *2023 smartphone market share — Brand A 38%, B 30%, C 12%, others 20%; in 2018 A had 20%, B 35%.* Write a 90-word two-paragraph description: overview first (Unit 8), then details using *respectively*, *twice as*, and one *gap widened/narrowed* sentence.",
+      "vocab": []
+    },
+    {
+      "seq": 21,
+      "block": "foundation",
+      "skill": "reading",
+      "title": "Matching headings: paragraphs first, headings second",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: daily pronunciation practice",
+      "test_ref": "ielts-academic-reading-sample-tasks-2023-p5",
+      "strategy_md": "## The type you must NOT scan\n\nMatching Headings reverses every habit from other types: it tests **main ideas**, so anchor-scanning fails. The distractor headings are built from *detail words* that genuinely appear in the paragraph — scanning walks you straight into them.\n\n## Procedure\n\n1. **Read the paragraph first, then look at headings** — never the reverse. After reading, summarize the paragraph in your own 3–4 words *before* opening the heading list.\n2. Match your summary to the closest heading. A correct heading covers the WHOLE paragraph; a distractor matches one sentence of it.\n3. Cross out each used heading (unless instructions allow reuse — rare).\n4. Stuck between two? Ask: *which one would still be true if I deleted the paragraph's most memorable sentence?* Main ideas survive deletion; details don't.\n\nToday's passage is about the physics of traffic — expect headings that paraphrase *mechanisms* while distractors echo vivid examples. 4 paragraphs to label. This is the slowest question type per mark; 8 minutes is a good target here.",
+      "vocab": []
+    },
+    {
+      "seq": 22,
+      "block": "foundation",
+      "skill": "listening",
+      "title": "Section 4: surviving the lecture",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: shadow a 1-minute academic clip (repeat aloud in sync)",
+      "strategy_md": "## One speaker, ten answers, no break\n\nSection 4 is a monologue lecture — the only section with no mid-section pause, and answers arrive roughly every 25–40 seconds. It is a note-completion marathon, and the notes on your screen are your lifeline.\n\n## The signpost system\n\nLecturers announce their structure. Learn to hear the road signs:\n\n- Sequence: *first of all... moving on to... finally* → you are changing question clusters.\n- Definition incoming: *what we mean by... this is known as* → often the exact answer word.\n- Contrast: *however... on the other hand* → the trap-then-correction pattern from Section 1 reappears, at lecture scale.\n\n**If you miss one answer, LET IT GO.** The deadliest Section 4 error is chasing a lost question while the next two answers play. Your printed notes tell you where the lecture currently is — glue your eyes to the next gap, not the last one.\n\n## Drill\n\nUsing Unit 5's prediction routine, take any 10-gap note frame (write your own from a YouTube lecture description) and label each gap's expected word type in under 60 seconds. Speed of prediction is the skill; from Week 5 you do this against real audio in the bank.",
+      "vocab": []
+    },
+    {
+      "seq": 23,
+      "block": "foundation",
+      "skill": "reading",
+      "title": "Matching consolidation: build the index, trust the index",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: daily pronunciation practice",
+      "test_ref": "ielts-academic-reading-sample-tasks-2023-p6",
+      "strategy_md": "## Same type, faster hands\n\nToday closes the matching family with a historical passage. Everything from Unit 13 applies; the goal now is **speed via the index**.\n\n## The 90-second index\n\nBefore touching any question, skim and build a margin index: every proper name and where it lives (*Dee — B, D / Harvey — E*). This costs 90 seconds and repays it three times over, because every matching question becomes: read statement → look up index → check 1–2 sentences.\n\n## Two refinements\n\n1. **Historical passages spread one person across time.** A scientist appears young in paragraph B and celebrated in paragraph F — index BOTH. The answer often hides in the second appearance, after the obvious one.\n2. **The statement's verb carries the match.** *Promoted, dismissed, measured, predicted* — match the ACTION in the statement to the action in the text, not just the name. Two people can touch the same topic; only one *did* the thing.\n\n3 questions. Time the whole thing including your index — under 7 minutes is the target. When you finish, compare: was the index cheaper than re-scanning per question? (It was.)",
+      "vocab": []
+    },
+    {
+      "seq": 24,
+      "block": "foundation",
+      "skill": "mixed",
+      "title": "Week 4 review: the language of data",
+      "est_minutes": 60,
+      "elsa_task": "15 min ELSA: free conversation — describe a chart from memory",
+      "strategy_md": "## Foundation block: complete\n\nFour weeks in: every major Reading question type has a procedure, Writing has a skeleton (thesis → PEEL → overview → comparison), Listening has prediction + signposts, and two vocabulary sets are live. Next week the diagnostic arrives — a full-length paper from your own test bank, graded for a real band estimate. Today: consolidate.\n\n## Eight words for describing data honestly\n\nToday's set powers Task 1 precision and Task 2 evidence sentences. Watch the pairs:\n\n- *substantially* vs *marginally* — big change vs barely-a-change. Choosing wrong misreports the data (a Task 1 accuracy error).\n- *considerable* vs *negligible* — the adjective forms of the same contrast.\n- *correlation* is NOT causation — writing *X correlates with Y* claims less than *X causes Y*, and claiming less is often the more defensible essay move.\n\n## Drill\n\n1. Study the eight words; one original sentence each, about data you know (Vietnam GDP, coffee exports, your own study hours).\n2. Rewrite Unit 20's smartphone description, upgrading with *substantially / disparity / offset*.\n3. Flashback test — no notes: write one correct sentence each with *exacerbate* (wk 1), *plateau* (wk 2), *contend* (wk 3). If any fails, revisit that unit's list before the diagnostic.",
+      "vocab": [
+        { "word": "substantially", "ipa": "/səbˈstænʃəli/", "meaning_en": "by a large amount or degree", "meaning_vi": "một cách đáng kể", "example": "Housing costs rose substantially between 2015 and 2025." },
+        { "word": "marginally", "ipa": "/ˈmɑːrdʒɪnəli/", "meaning_en": "by a very small amount", "meaning_vi": "một chút, không đáng kể", "example": "Test scores improved only marginally after the reform." },
+        { "word": "negligible", "ipa": "/ˈneɡlɪdʒəbl/", "meaning_en": "so small it can be ignored", "meaning_vi": "không đáng kể", "example": "The difference between the two groups was negligible." },
+        { "word": "considerable", "ipa": "/kənˈsɪdərəbl/", "meaning_en": "large enough to be important", "meaning_vi": "đáng kể, khá lớn", "example": "The project required considerable investment." },
+        { "word": "correlation", "ipa": "/ˌkɔːrəˈleɪʃn/", "meaning_en": "a mutual relationship between two things", "meaning_vi": "mối tương quan", "example": "There is a strong correlation between sleep and exam performance." },
+        { "word": "disparity", "ipa": "/dɪˈspærəti/", "meaning_en": "a large difference, especially an unfair one", "meaning_vi": "sự chênh lệch", "example": "The income disparity between regions continues to widen." },
+        { "word": "offset", "ipa": "/ˌɔːfˈset/", "meaning_en": "to balance or cancel out an effect", "meaning_vi": "bù đắp, triệt tiêu", "example": "Higher wages were offset by rising living costs." },
+        { "word": "threefold", "ipa": "/ˈθriːfoʊld/", "meaning_en": "three times as much or as many", "meaning_vi": "gấp ba lần", "example": "Online sales increased threefold during the decade." }
+      ]
+    }
+  ]
+}

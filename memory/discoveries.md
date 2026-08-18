@@ -483,3 +483,116 @@ so the module itself cannot be called from a script. That is the same
 browser-verification debt as Phases 01–03, not a new gap.
 **Status:** self-resolved as far as an executor can. The UI-level check needs either
 the browser walk-through or the user reaching unit 2 in normal use.
+
+---
+
+## [Phase 05] A seed file may now contain no units at all — Tier: Moderate
+**Finding:** The task file asks `scripts/seed.ts` to accept a top-level `tests[]` for
+bank tests authored by hand. `content/seed/writing_bank_01.json` turns out to contain
+*only* that — no `units` key at all — while `parseSeedFile` had `units` as a hard
+requirement (`fail("units", "is empty — nothing to seed")`) and returned `SeedUnit[]`.
+Every downstream step in the seeder (the roadmap pointer invariant, the units upsert,
+the vocab prune, the `test_ref` linking) also assumes at least one unit.
+**Impact:** `scripts/seed.ts` and the shared validator's public signature, so
+`ingest_commit.ts` and `ingest.ts` too. Not a plan-level change: `docs/plan.md` never
+said a seed file must carry units, only that content is architect-authored data.
+**How it was handled:** `parseSeedFile` now returns `{ units, tests }`, with each half
+optional and a file carrying neither rejected at `<root>`. The seeder writes the bank
+tests **first** and then returns early if `units` is empty, so a bank-only file never
+reaches an upsert with no rows — and, because bank tests are written first, a unit in
+the *same* file can reference one of them by `test_ref` (the slug resolver skips slugs
+already written in this run). The id-stable slug upsert itself was extracted to
+`scripts/lib/bank_upsert.ts` and is shared with `ingest_commit.ts` verbatim rather than
+duplicated, as the task file required.
+**Status:** self-resolved, no plan.md change needed.
+
+---
+
+## [Phase 05] A Task 1 prompt IS a markdown table, and `react-markdown` cannot render one — Tier: Moderate
+**Finding:** The architect's ruling for this phase is that Task 1 prompts use described
+data — markdown tables — because chart images are out of scope for the whole project.
+So the table in `writing-t1-internet-vietnam` is not decoration, it is the question: a
+candidate who cannot read the figures cannot answer. `react-markdown` implements
+CommonMark, and pipe tables are a GitHub extension it renders only with `remark-gfm`.
+Without it the prompt shows as a wall of `| 2005 | 10% | 30% |` lines. Adding the plugin
+is a new dependency, and "no new dependency" is an explicit Definition-of-Done item.
+**Impact:** the writing panel, and any later phase that renders architect markdown
+containing a table.
+**How it was handled:** `src/lib/md_tables.ts` (new, pure) splits a markdown string into
+prose blocks and table blocks, recognising the shape a table is actually written in — a
+pipe row, a delimiter row of dashes with optional alignment colons, then body rows until
+the first non-pipe line. `MarkdownWithTables` renders the table blocks as real
+`<table>` elements with the design's tokens and hands every prose block to
+`react-markdown` untouched. Escaped pipes (`\|`) are deliberately NOT supported: no seed
+content uses one, and a half-working escape rule would be worse than an absent one.
+Pinned by fixture (the real Task 1 prompt, a prompt with no table, pipes without a
+delimiter row, alignment colons, two tables in one prompt) and by a `react-dom/server`
+render asserting every data cell reaches the markup and no delimiter row leaks.
+**Status:** self-resolved, no plan.md change needed. If a later phase needs full GFM
+(footnotes, strikethrough, task lists), that is the point to weigh `remark-gfm` properly
+rather than extending this parser.
+
+---
+
+## [Phase 05] `countWords` is named in a server-only contract but is needed on every keystroke — Tier: Moderate
+**Finding:** The Phase 05 contract puts `countWords` in `src/lib/writing.ts`, marked
+server-only, and also asks for "a live word counter that turns accent-colored at
+`min_words`". A live counter runs in the browser on every keystroke. Importing
+`countWords` from `writing.ts` in a client component would pull `writing.ts` → `ai.ts` →
+`config.ts` into the client bundle — the module that reads `AI_API_KEY`. Nothing would
+leak (the key is not a `NEXT_PUBLIC_` variable, so its value is never inlined), but the
+AI client would be shipped to the browser, and the CLAUDE.md rule that `config.ts` is the
+only file reading `process.env` exists precisely to keep that boundary legible.
+**Impact:** the shape of `src/lib/writing.ts`'s exports, and any later feature that wants
+a pure helper out of a server-only module.
+**How it was handled:** the counting rule lives in `src/lib/words.ts` (pure, no imports)
+alongside `MIN_ESSAY_WORDS`, and `writing.ts` re-exports both — so the contract's surface
+is exactly as specified, there is one implementation, and the client imports from
+`words.ts`. Verified after `next build`: the rubric prompt string appears in **zero**
+files under `.next/static`.
+**Status:** self-resolved, no plan.md change needed.
+
+---
+
+## [Phase 05] Next.js redacts server-action errors, so the under-50-word refusal needs a client half — Tier: Moderate
+**Finding:** The contract says "`< 50` words: the caller refuses BEFORE any AI call (no
+token spend); the attempt stays unsubmitted and **the UI says why**". Implemented purely
+server-side, `submitEssayAttempt` throws `EssayTooShortError` with a message naming the
+word count — and in a production build Next.js replaces the message of any error thrown
+in a server action with a generic "An error occurred in the Server Components render",
+keeping only a digest. The user would see a redacted error instead of "29 words is not
+enough to grade". The zero-token property would hold; the "says why" half would not.
+**Impact:** every server action that means to explain a refusal to the user, not just
+this one.
+**How it was handled:** the refusal is enforced on both sides. Both players count the
+words before calling the action and, under the threshold, never issue the request at all
+— they render `EssayRefusal`, which names the count, the threshold and the fact that
+nothing was saved. `submitEssayAttempt` refuses again on the server and remains
+authoritative for any other caller. Both halves spend zero tokens, and the fixture
+asserts zero model calls at 49 words and exactly one at 50.
+**Status:** self-resolved, no plan.md change needed. Worth remembering for any later
+refusal that needs to reach the user as prose.
+
+---
+
+## [Phase 05] The ingestion shape cannot carry a writing task, so staged writing tests are refused — Tier: Moderate
+**Finding:** The new validator rule says a `writing` test carries `task_type`,
+`min_words` and `prompt_md` in its `content`. `StagedTest.content` is parsed by
+`parseStagedContent`, which keeps exactly two fields — `passage_md` and `transcript_md` —
+and drops everything else. So a writing test arriving through `ingest.ts` would be
+committed with a `content` that has no task in it: `readEssayTask` would return null,
+`PlayerTest.essay` would be null, and the player would show "this test contains essay
+question(s), which are not yet supported" on a test that is nothing but an essay.
+**Impact:** `scripts/lib/validate.ts`, shared by `ingest.ts` (soft) and
+`ingest_commit.ts` (hard). No writing test has ever been staged, so nothing existing
+changes.
+**How it was handled:** the writing rules are applied to seed tests, where the whole
+`content` object is preserved verbatim, and a staged test whose skill is `writing` is
+reported through the sink — a warning in `ingest.ts`'s review.md, a hard abort in
+`ingest_commit.ts`. This is an addition the task file did not ask for; it is a refusal,
+not an invention, and it keeps a half-formed writing test out of the database rather
+than letting one in silently broken. Writing tasks are authored in a seed file, which is
+where `writing_bank_01.json` already puts them.
+**Status:** self-resolved, no plan.md change needed. If writing tasks ever *should* be
+ingestible, `StagedTest.content` needs the three fields and `ingest.ts` needs a prompt
+that extracts them — a Phase-level decision, not a validator tweak.

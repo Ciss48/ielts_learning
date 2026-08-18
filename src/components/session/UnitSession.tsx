@@ -6,24 +6,35 @@ import Link from "next/link";
 import type { Unit } from "@/lib/roadmap";
 import type { GradedAttempt, PlayerTest } from "@/lib/tests";
 import type { DueCard, UnitVocabWord } from "@/lib/vocab";
+import type { WritingFeedback } from "@/lib/writing";
+import { MIN_ESSAY_WORDS, countWords } from "@/lib/words";
 import { SKILL_LABEL, unitNumber } from "@/lib/labels";
 import { StepRail, type RailStep } from "@/components/session/StepRail";
 import { StrategyArticle } from "@/components/session/StrategyArticle";
 import {
+  AiWait,
   CountdownPill,
   ErrorBanner,
+  GRADING_WAIT,
   PracticeIntro,
   PracticeSplit,
   PrimaryButton,
   ReviewPanel,
   SessionFooter,
 } from "@/components/session/PracticePanels";
+import {
+  EssayFeedbackPanel,
+  EssayIntro,
+  EssayPanel,
+  EssayRefusal,
+} from "@/components/session/WritingPanels";
 import { VocabTriagePanel, WarmUpPanel } from "@/components/session/VocabPanels";
 import { completeUnitAction } from "@/app/unit/[seq]/actions";
 import { addCardsAction } from "@/app/vocab/actions";
 import {
   startAttemptAction,
   submitAttemptAction,
+  submitEssayAttemptAction,
 } from "@/app/unit/[seq]/test-actions";
 
 /**
@@ -89,6 +100,8 @@ export function UnitSession({
   vocab: UnitVocabWord[];
 }) {
   const hasPractice = test !== null && !isCompleted;
+  /** Non-null exactly when this unit's test is a writing task. */
+  const essayTask = test?.essay ?? null;
 
   const steps = useMemo<Step[]>(() => {
     const list: Step[] = [];
@@ -112,6 +125,10 @@ export function UnitSession({
   const [remainingMs, setRemainingMs] = useState<number | null>(null);
   const [checkedWords, setCheckedWords] = useState<Set<string>>(new Set());
   const [addedCount, setAddedCount] = useState<number | null>(null);
+  const [essayText, setEssayText] = useState("");
+  const [feedback, setFeedback] = useState<WritingFeedback | null>(null);
+  /** Word count of a submission that was refused for being too short. */
+  const [refusedWords, setRefusedWords] = useState<number | null>(null);
 
   const stepIndex = Math.max(
     0,
@@ -137,6 +154,11 @@ export function UnitSession({
     answersRef.current = answers;
   }, [answers]);
 
+  const essayRef = useRef(essayText);
+  useEffect(() => {
+    essayRef.current = essayText;
+  }, [essayText]);
+
   const submittedRef = useRef(false);
 
   const submit = useCallback(async () => {
@@ -146,11 +168,28 @@ export function UnitSession({
     setError(null);
 
     try {
-      const result = await submitAttemptAction(
-        attempt.attemptId,
-        answersRef.current,
-      );
-      setGraded(result);
+      if (essayTask) {
+        const text = essayRef.current;
+        const words = countWords(text);
+        // The refusal, on the caller's side of the wire: under 50 words nothing
+        // is sent, so nothing is graded, nothing is saved and no tokens are
+        // spent. `submitEssayAttempt` refuses again on the server — this is the
+        // half that guarantees the request never leaves the browser.
+        if (words < MIN_ESSAY_WORDS) {
+          setRefusedWords(words);
+          submittedRef.current = false;
+          return;
+        }
+        setRefusedWords(null);
+        const result = await submitEssayAttemptAction(attempt.attemptId, text);
+        setFeedback(result.feedback);
+      } else {
+        const result = await submitAttemptAction(
+          attempt.attemptId,
+          answersRef.current,
+        );
+        setGraded(result);
+      }
       setPhase("review");
     } catch (err) {
       // Let the user try again rather than losing the attempt to a blip.
@@ -159,7 +198,7 @@ export function UnitSession({
     } finally {
       setBusy(false);
     }
-  }, [attempt]);
+  }, [attempt, essayTask]);
 
   // Countdown. At 00:00 it auto-submits whatever has been answered.
   const submitRef = useRef(submit);
@@ -263,15 +302,36 @@ export function UnitSession({
         <StrategyArticle unit={unit} completed={isCompleted} />
       )}
 
-      {phase === "practice" && test && !attempt && (
-        <PracticeIntro
-          test={test}
-          unsupportedQTypes={unsupportedQTypes}
-          busy={busy}
-        />
+      {phase === "practice" &&
+        test &&
+        !attempt &&
+        (essayTask ? (
+          <EssayIntro test={test} essay={essayTask} busy={busy} />
+        ) : (
+          <PracticeIntro
+            test={test}
+            unsupportedQTypes={unsupportedQTypes}
+            busy={busy}
+          />
+        ))}
+
+      {running && test && essayTask && (
+        <>
+          <EssayPanel
+            essay={essayTask}
+            text={essayText}
+            disabled={busy}
+            onChange={setEssayText}
+          />
+          {refusedWords !== null && (
+            <div className="mx-auto max-w-[1180px] px-6">
+              <EssayRefusal words={refusedWords} />
+            </div>
+          )}
+        </>
       )}
 
-      {running && test && (
+      {running && test && !essayTask && (
         <PracticeSplit
           test={test}
           answers={answers}
@@ -283,7 +343,16 @@ export function UnitSession({
         />
       )}
 
-      {phase === "review" && test && graded && (
+      {phase === "review" && test && essayTask && feedback && (
+        <EssayFeedbackPanel
+          test={test}
+          essay={essayTask}
+          feedback={feedback}
+          text={essayText}
+        />
+      )}
+
+      {phase === "review" && test && !essayTask && graded && (
         <ReviewPanel test={test} graded={graded} />
       )}
 
@@ -305,7 +374,12 @@ export function UnitSession({
       )}
 
       {phase === "complete" && (
-        <CompletePanel unit={unit} graded={graded} isCompleted={isCompleted} />
+        <CompletePanel
+          unit={unit}
+          graded={graded}
+          feedback={feedback}
+          isCompleted={isCompleted}
+        />
       )}
 
       <SessionFooter>
@@ -313,9 +387,14 @@ export function UnitSession({
           <>
             <CountdownPill remainingMs={remainingMs} />
             <span className="text-[12.5px] text-faint">
-              {answeredCount}/{test.questions.length} answered
+              {essayTask
+                ? `${countWords(essayText)}/${essayTask.minWords} words`
+                : `${answeredCount}/${test.questions.length} answered`}
             </span>
-            <span className="ml-auto text-[12.5px] text-faint">{stepLabel}</span>
+            <span className="ml-auto text-[12.5px] text-faint">
+              {busy && essayTask ? null : stepLabel}
+            </span>
+            {busy && essayTask && <AiWait {...GRADING_WAIT} />}
             <button
               type="button"
               onClick={() => void submit()}
@@ -323,7 +402,13 @@ export function UnitSession({
               className="rounded-[11px] px-[22px] py-2.5 text-[14px] font-semibold hover:brightness-110 disabled:opacity-60"
               style={{ background: "var(--accent)", color: "var(--accent-ink)" }}
             >
-              {busy ? "Submitting…" : "Submit answers"}
+              {busy
+                ? essayTask
+                  ? "Grading…"
+                  : "Submitting…"
+                : essayTask
+                  ? "Submit for feedback"
+                  : "Submit answers"}
             </button>
           </>
         ) : (
@@ -421,10 +506,12 @@ export function UnitSession({
 function CompletePanel({
   unit,
   graded,
+  feedback,
   isCompleted,
 }: {
   unit: Unit;
   graded: GradedAttempt | null;
+  feedback: WritingFeedback | null;
   isCompleted: boolean;
 }) {
   return (
@@ -440,7 +527,9 @@ function CompletePanel({
           <>
             {graded
               ? `You scored ${graded.scoreRaw} out of ${graded.scoreTotal}. `
-              : ""}
+              : feedback
+                ? `Your essay came back at an estimated band ${feedback.overallBand.toFixed(1)}. `
+                : ""}
             Marking this unit complete logs {unit.estMinutes} minutes to today and
             moves the roadmap to the next unit.
           </>

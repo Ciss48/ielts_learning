@@ -1,10 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 
 import type { GradedAttempt, PlayerTest } from "@/lib/tests";
 import { SKILL_LABEL } from "@/lib/labels";
 import { QuestionField } from "@/components/session/QuestionField";
+import { explainAnswerAction } from "@/app/unit/[seq]/test-actions";
 
 /**
  * The three presentational panels of a practice run: the intro, the split
@@ -258,12 +260,137 @@ export function ReviewPanel({
                 <ReactMarkdown>{result.explanationMd}</ReactMarkdown>
               </div>
             )}
+
+            {/* Only ever on a question that was answered wrong. */}
+            {!result.correct && (
+              <ExplainMyAnswer attemptId={graded.attemptId} qnum={result.qnum} />
+            )}
           </li>
         ))}
       </ol>
     </section>
   );
 }
+
+/**
+ * "Why is my answer wrong?" — one click, one model call, and nothing kept.
+ *
+ * The explanation lives in this component's state and nowhere else: the server
+ * action reads the question, the verified key and the user's own answer back
+ * out of the database and returns a string. It does not write, so leaving the
+ * page loses the explanation, which is the intended behaviour — the stored
+ * `explanation_md` above is the permanent one.
+ */
+function ExplainMyAnswer({ attemptId, qnum }: { attemptId: string; qnum: number }) {
+  const [state, setState] = useState<
+    | { status: "idle" }
+    | { status: "loading" }
+    | { status: "done"; explanation: string }
+    | { status: "error"; message: string }
+  >({ status: "idle" });
+
+  async function ask() {
+    setState({ status: "loading" });
+    try {
+      const { explanation } = await explainAnswerAction(attemptId, qnum);
+      setState({ status: "done", explanation });
+    } catch (err) {
+      setState({
+        status: "error",
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  if (state.status === "done") {
+    return (
+      <div className="mt-3 rounded-xl border border-line bg-surface-2 px-4 py-3">
+        <p className="eyebrow mb-1.5">Why your answer is wrong</p>
+        <div className="prose-explanation">
+          <ReactMarkdown>{state.explanation}</ReactMarkdown>
+        </div>
+        <p className="mt-2 text-[11.5px] text-faint">
+          Generated just now for this answer. It is not saved.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={() => void ask()}
+          disabled={state.status === "loading"}
+          className="rounded-[10px] border border-line px-3 py-1.5 text-[12.5px] text-dim hover:text-text disabled:opacity-60"
+        >
+          {state.status === "loading" ? "Thinking…" : "Why is my answer wrong?"}
+        </button>
+        {state.status === "loading" && <AiWait {...EXPLAIN_WAIT} />}
+      </div>
+      {state.status === "error" && (
+        <p className="mt-2 text-[12.5px]" style={{ color: "var(--warn)" }}>
+          {state.message}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Elapsed seconds while a model call is in flight, with what to expect.
+ *
+ * The measured cost of one graded essay is 26–94 seconds and there is no
+ * streaming, so a button that says "Grading…" and nothing else is
+ * indistinguishable from a button that has hung. A number that visibly moves and
+ * a stated expectation are the whole fix: no spinner library, no streaming, no
+ * new dependency.
+ *
+ * It counts from `Date.now()` rather than from tick count, because a background
+ * tab throttles `setInterval` and an under-reported wait would be worse than no
+ * timer at all. Mount it only while the call is running — remounting is what
+ * resets it.
+ */
+export function AiWait({
+  what,
+  expectation,
+}: {
+  what: string;
+  expectation: string;
+}) {
+  const [seconds, setSeconds] = useState(0);
+
+  useEffect(() => {
+    const startedAt = Date.now();
+    const id = setInterval(
+      () => setSeconds(Math.floor((Date.now() - startedAt) / 1000)),
+      1000,
+    );
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <span className="text-[12.5px] text-faint" aria-live="polite">
+      <span className="font-mono tabular-nums" style={{ color: "var(--accent)" }}>
+        {what} {seconds}s
+      </span>
+      {" · "}
+      {expectation}
+    </span>
+  );
+}
+
+/** The one place the expectation is worded, so both players say the same thing. */
+export const GRADING_WAIT = {
+  what: "Grading",
+  expectation: "usually 30–90 seconds",
+} as const;
+
+export const EXPLAIN_WAIT = {
+  what: "Thinking",
+  expectation: "usually under 30 seconds",
+} as const;
 
 /** Shared by both players' footers. */
 export function formatClock(ms: number): string {

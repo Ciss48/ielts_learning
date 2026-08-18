@@ -5,16 +5,30 @@
  * `explanation_md` are selected from the database ONLY inside `submitAttempt`.
  * `getTestForUnit` — the one function that feeds the pre-submission UI — never
  * names those columns, so they cannot reach the client by accident, however the
- * player is refactored later.
+ * player is refactored later. Phase 05's `submitEssayAttempt` does not weaken
+ * that: an essay has no answer key (the validator enforces `answer_key: []`),
+ * and that path never selects the column at all.
  *
  * Grading is deliberately split in two: `gradeAnswers` is pure and exported for
- * `scripts/check_grading.ts`; `submitAttempt` wraps it with the I/O.
+ * `scripts/check_grading.ts`; `submitAttempt` wraps it with the I/O. Essay
+ * grading is the same split one module over: `src/lib/writing.ts` holds the
+ * model call and the validation, and `submitEssayAttempt` below is its I/O.
  */
 
 import { createClient } from "@/lib/supabase/server";
 import { rawToBand } from "@/lib/band";
 import { normalizeAnswer } from "@/lib/normalize";
 import { resolveAudioUrl } from "@/lib/r2";
+import { countWords } from "@/lib/words";
+import {
+  EssayTooShortError,
+  MIN_ESSAY_WORDS,
+  feedbackToMarkdown,
+  gradeEssay,
+  readEssayTask,
+  type EssayTask,
+  type WritingFeedback,
+} from "@/lib/writing";
 
 export type ObjectiveQType =
   | "mcq"
@@ -47,6 +61,24 @@ export interface PlayerQuestion {
   options: string[] | null;
 }
 
+/**
+ * The writing task, when this test is one. Additive to the Phase 02 contract:
+ * `questions` still carries only objective questions, so every existing caller
+ * is unchanged, and a player that does not know about essays simply sees a test
+ * with no questions rather than a broken one.
+ *
+ * Client-safe by construction — an essay has no answer key to leak.
+ */
+export interface PlayerEssay {
+  qnum: number;
+  /** The question's own instruction line ("Write your essay in response…"). */
+  prompt: string;
+  taskType: "task1" | "task2";
+  minWords: number;
+  /** The task itself, markdown, tables included. */
+  promptMd: string;
+}
+
 export interface PlayerTest {
   id: string;
   skill: "reading" | "listening" | "writing";
@@ -55,6 +87,7 @@ export interface PlayerTest {
   durationMinutes: number;
   content: { passage_md?: string; transcript_md?: string };
   questions: PlayerQuestion[];
+  essay: PlayerEssay | null;
 }
 
 export interface PerQuestionResult {
@@ -148,8 +181,10 @@ async function toPlayerTest(test: TestRow): Promise<PlayerTest> {
     audioUrl: await resolveAudioUrl(test.audio_url),
     durationMinutes: test.duration_minutes,
     content: toContent(test.content),
-    // Non-objective types (essay) are dropped rather than rendered wrong; the
-    // page warns about them via `getUnsupportedQTypes`.
+    // Objective questions only. An essay is not one of them and is carried on
+    // `essay` below instead; any OTHER non-objective type is still dropped
+    // rather than rendered wrong, and the page warns about it via
+    // `getUnsupportedQTypes`.
     questions: rows
       .filter((row) => isObjectiveQType(row.qtype))
       .map((row) => ({
@@ -159,6 +194,31 @@ async function toPlayerTest(test: TestRow): Promise<PlayerTest> {
         prompt: row.prompt,
         options: toOptions(row.options),
       })),
+    essay: toPlayerEssay(test, rows),
+  };
+}
+
+/**
+ * A writing test is exactly one essay question plus the task in `content`
+ * (enforced by the validator). If either half is missing the row is not a
+ * playable writing test, and returning null gives the "unsupported question
+ * type" warning rather than a panel with no prompt in it.
+ */
+function toPlayerEssay(test: TestRow, rows: PlayerQuestionRow[]): PlayerEssay | null {
+  if (test.skill !== "writing") return null;
+
+  const essayRow = rows.find((row) => row.qtype === "essay");
+  if (!essayRow) return null;
+
+  const task = readEssayTask(test.content);
+  if (task === null) return null;
+
+  return {
+    qnum: essayRow.qnum,
+    prompt: essayRow.prompt,
+    taskType: task.taskType,
+    minWords: task.minWords,
+    promptMd: task.promptMd,
   };
 }
 
@@ -207,6 +267,12 @@ export interface BankTestSummary {
   /** Best score across all submitted attempts, or null if never attempted. */
   bestScoreRaw: number | null;
   scoreTotal: number | null;
+  /**
+   * Best band across all submitted attempts. A writing test has no raw score at
+   * all — the essay is graded against the descriptors — so this is the only
+   * result it has to show.
+   */
+  bestBandEstimate: number | null;
   attemptCount: number;
 }
 
@@ -242,7 +308,7 @@ export async function listBankTests(): Promise<BankTestSummary[]> {
     supabase.from("questions").select("test_id").in("test_id", ids),
     supabase
       .from("attempts")
-      .select("test_id, score_raw, score_total")
+      .select("test_id, score_raw, score_total, band_estimate")
       .in("test_id", ids)
       .not("submitted_at", "is", null),
   ]);
@@ -264,25 +330,42 @@ export async function listBankTests(): Promise<BankTestSummary[]> {
     questionCounts.set(testId, (questionCounts.get(testId) ?? 0) + 1);
   }
 
-  const best = new Map<string, { raw: number; total: number | null; count: number }>();
+  interface Best {
+    raw: number;
+    total: number | null;
+    band: number | null;
+    count: number;
+  }
+  const best = new Map<string, Best>();
   for (const row of attemptsResult.data ?? []) {
     const testId = row.test_id as string;
     const raw = row.score_raw as number | null;
+    // `band_estimate` is numeric(2,1); PostgREST hands numerics back as strings.
+    const bandRaw = row.band_estimate as number | string | null;
+    const band = bandRaw === null ? null : Number(bandRaw);
+
     const previous = best.get(testId);
     const count = (previous?.count ?? 0) + 1;
-    if (raw === null) {
+    const bestBand =
+      band !== null && Number.isFinite(band)
+        ? Math.max(band, previous?.band ?? band)
+        : (previous?.band ?? null);
+
+    if (raw === null || (previous && raw <= previous.raw)) {
       best.set(testId, {
         raw: previous?.raw ?? -1,
         total: previous?.total ?? null,
+        band: bestBand,
         count,
       });
       continue;
     }
-    if (!previous || raw > previous.raw) {
-      best.set(testId, { raw, total: (row.score_total as number | null) ?? null, count });
-    } else {
-      best.set(testId, { ...previous, count });
-    }
+    best.set(testId, {
+      raw,
+      total: (row.score_total as number | null) ?? null,
+      band: bestBand,
+      count,
+    });
   }
 
   return rows.map((test) => {
@@ -296,35 +379,45 @@ export async function listBankTests(): Promise<BankTestSummary[]> {
       questionCount: questionCounts.get(test.id) ?? 0,
       bestScoreRaw: scores && scores.raw >= 0 ? scores.raw : null,
       scoreTotal: scores && scores.raw >= 0 ? scores.total : null,
+      bestBandEstimate: scores?.band ?? null,
       attemptCount: scores?.count ?? 0,
     };
   });
 }
 
 /**
- * Additive to the locked contract: question types on this test that the Phase 02
- * player cannot render (only `essay` today — AI grading lands in Phase 5).
- * Kept off `PlayerTest` so the contract's shape is unchanged.
+ * Additive to the locked contract: question types on this test that the player
+ * cannot render. Kept off `PlayerTest` so the contract's shape is unchanged.
+ *
+ * Since Phase 05 an `essay` on a writing test is supported — it is played
+ * through `PlayerTest.essay` — so it is not reported here. An `essay` sitting on
+ * a reading or listening test still is: nothing can render it there.
  */
 export async function getUnsupportedQTypes(testId: string): Promise<string[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("questions")
-    .select("qtype")
-    .eq("test_id", testId);
+  const [testResult, questionsResult] = await Promise.all([
+    supabase.from("tests").select("skill").eq("id", testId).maybeSingle(),
+    supabase.from("questions").select("qtype").eq("test_id", testId),
+  ]);
 
-  if (error) {
+  if (questionsResult.error) {
     throw new Error(
-      `Failed to load question types for test ${testId}: ${error.message}`,
+      `Failed to load question types for test ${testId}: ${questionsResult.error.message}`,
     );
   }
+  if (testResult.error) {
+    throw new Error(`Failed to load test ${testId}: ${testResult.error.message}`);
+  }
+
+  const isWriting = testResult.data?.skill === "writing";
 
   return [
     ...new Set(
-      (data ?? [])
+      (questionsResult.data ?? [])
         .map((row) => row.qtype as string)
-        .filter((qtype) => !isObjectiveQType(qtype)),
+        .filter((qtype) => !isObjectiveQType(qtype))
+        .filter((qtype) => !(isWriting && qtype === "essay")),
     ),
   ];
 }
@@ -489,4 +582,111 @@ export async function submitAttempt(
       explanationMd: byQnum.get(result.qnum)?.explanationMd ?? null,
     })),
   };
+}
+
+// --- essays ------------------------------------------------------------------
+
+/**
+ * Grade one essay attempt and store the result.
+ *
+ * Three things this deliberately does NOT do:
+ *  - It never reads or writes `answer_key`. An essay has none (the validator
+ *    enforces `answer_key: []`), so the Phase 02 split — keys are read in
+ *    exactly one function — is untouched.
+ *  - It never writes `score_raw` / `score_total`. A four-criteria band is not a
+ *    fraction, and leaving them null is what tells `/bank` and Phase 6 to show a
+ *    band instead of a score.
+ *  - It never re-grades. One grade per attempt; trying again is a new attempt.
+ *
+ * Under `MIN_ESSAY_WORDS` it throws `EssayTooShortError` BEFORE the model call
+ * and before any write, so the attempt stays unsubmitted and no tokens are
+ * spent.
+ */
+export async function submitEssayAttempt(
+  attemptId: string,
+  essay: string,
+): Promise<{ feedback: WritingFeedback }> {
+  const supabase = await createClient();
+
+  const { data: attempt, error: attemptError } = await supabase
+    .from("attempts")
+    .select("id, test_id, submitted_at")
+    .eq("id", attemptId)
+    .maybeSingle();
+
+  if (attemptError) {
+    throw new Error(`Failed to load attempt ${attemptId}: ${attemptError.message}`);
+  }
+  if (!attempt) {
+    throw new Error(`No attempt with id ${attemptId}`);
+  }
+  if (attempt.submitted_at !== null) {
+    throw new Error(
+      `Attempt ${attemptId} has already been submitted. One grade per attempt — ` +
+        "start a new attempt to write this task again.",
+    );
+  }
+
+  const testId = attempt.test_id as string;
+  const task = await getEssayTask(testId);
+
+  // The refusal, before the model call and before any write.
+  const words = countWords(essay);
+  if (words < MIN_ESSAY_WORDS) {
+    throw new EssayTooShortError(words);
+  }
+
+  const feedback = await gradeEssay({
+    taskType: task.taskType,
+    promptMd: task.promptMd,
+    essay,
+    minWords: task.minWords,
+  });
+
+  const { error: updateError } = await supabase
+    .from("attempts")
+    .update({
+      submitted_at: new Date().toISOString(),
+      // Verbatim: what was written is the record, and Phase 6 shows it back.
+      answers: { essay },
+      score_raw: null,
+      score_total: null,
+      band_estimate: feedback.overallBand,
+      ai_feedback_md: feedbackToMarkdown(feedback, task),
+    })
+    .eq("id", attemptId);
+
+  if (updateError) {
+    throw new Error(`Failed to save essay attempt ${attemptId}: ${updateError.message}`);
+  }
+
+  return { feedback };
+}
+
+/** The writing task behind a test id, or a thrown error naming what is wrong. */
+async function getEssayTask(testId: string): Promise<EssayTask> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("tests")
+    .select("id, skill, content")
+    .eq("id", testId)
+    .maybeSingle();
+
+  if (error) throw new Error(`Failed to load test ${testId}: ${error.message}`);
+  if (!data) throw new Error(`No test with id ${testId}`);
+  if (data.skill !== "writing") {
+    throw new Error(
+      `Test ${testId} is a ${data.skill} test — essays are only graded on writing tests.`,
+    );
+  }
+
+  const task = readEssayTask(data.content);
+  if (task === null) {
+    throw new Error(
+      `Test ${testId} is a writing test but its content is missing a usable ` +
+        "`task_type`, `min_words` or `prompt_md`. Re-seed it from content/seed/.",
+    );
+  }
+  return task;
 }

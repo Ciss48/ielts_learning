@@ -52,7 +52,7 @@ export default async function BankPage() {
                   <Th>Skill</Th>
                   <Th align="right">Questions</Th>
                   <Th align="right">Time</Th>
-                  <Th align="right">Best score</Th>
+                  <Th align="right">Best result</Th>
                   <Th />
                 </tr>
               </thead>
@@ -79,8 +79,18 @@ export default async function BankPage() {
                     <td className="px-4 py-3.5 text-right font-mono text-[13px] tabular-nums">
                       {test.durationMinutes} min
                     </td>
+                    {/* A writing test has no raw score — the essay is graded
+                        against the descriptors — so it shows its band instead. */}
                     <td className="px-4 py-3.5 text-right font-mono text-[13px] tabular-nums">
-                      {test.bestScoreRaw === null ? (
+                      {test.skill === "writing" ? (
+                        test.bestBandEstimate === null ? (
+                          <span className="text-faint">—</span>
+                        ) : (
+                          <span style={{ color: "var(--accent)" }}>
+                            band {test.bestBandEstimate.toFixed(1)}
+                          </span>
+                        )
+                      ) : test.bestScoreRaw === null ? (
                         <span className="text-faint">—</span>
                       ) : (
                         <span style={{ color: "var(--accent)" }}>
